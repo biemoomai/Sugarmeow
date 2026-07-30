@@ -94,14 +94,14 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
                     cursor={{ fill: 'rgba(226, 232, 240, 0.4)' }}
                     contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', fontWeight: 'bold' }}
                     itemStyle={{ color: '#0f172a' }}
-                    formatter={(value: number) => [new Intl.NumberFormat('th-TH').format(value), '']}
+                    formatter={(value: any) => [new Intl.NumberFormat('th-TH').format(value || 0), '']}
                   />
                   <ReferenceLine y={0} stroke="#94a3b8" strokeWidth={2} opacity={0.5} />
                   <Bar 
                     dataKey="value" 
                     radius={[6, 6, 0, 0]} 
                     barSize={32}
-                    onClick={(data) => handleNavigateToTransactions(data.name)}
+                    onClick={(data) => { if (data?.name) handleNavigateToTransactions(data.name); }}
                     className="cursor-pointer hover:opacity-80 transition-opacity"
                   >
                     {chartData.map((entry, index) => (
@@ -110,7 +110,7 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
                     <LabelList 
                       dataKey="value" 
                       position="top" 
-                      formatter={(val: number) => new Intl.NumberFormat('th-TH', { notation: 'compact', compactDisplay: 'short' }).format(val)}
+                      formatter={(val: any) => new Intl.NumberFormat('th-TH', { notation: 'compact' }).format(Number(val) || 0)}
                       style={{ fontSize: '10px', fontWeight: 'bold', fill: '#64748b' }}
                     />
                   </Bar>

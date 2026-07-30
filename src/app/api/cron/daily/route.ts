@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import * as line from '@line/bot-sdk';
-
-const config = {
-  channelAccessToken: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
-  channelSecret: process.env.LINE_CHANNEL_SECRET || '',
-};
-
-const client = new line.Client(config);
+import { lineClient } from '@/lib/line';
 
 export async function GET(req: NextRequest) {
   try {
@@ -68,7 +61,7 @@ export async function GET(req: NextRequest) {
     // Broadcast to the owner (assuming owner user ID is configured)
     const ownerLineId = process.env.OWNER_LINE_USER_ID;
     if (ownerLineId) {
-      await client.pushMessage(ownerLineId, { type: 'text', text: report });
+      await lineClient.pushMessage({ to: ownerLineId, messages: [{ type: 'text', text: report }] });
     } else {
       console.log("OWNER_LINE_USER_ID is not set. Would have sent:", report);
     }
