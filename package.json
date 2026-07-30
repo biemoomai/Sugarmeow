@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup:richmenu": "ts-node scripts/setup-rich-menu.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
