@@ -32,6 +32,7 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
     if (type === 'ยอดขาย' || type === 'sales') typeParam = 'sales';
     if (type === 'ซื้อเข้า' || type === 'purchases') typeParam = 'purchases';
     if (type === 'รายจ่าย' || type === 'expenses') typeParam = 'expenses';
+    if (type === 'ค้างชำระ' || type === 'pending') typeParam = 'pending';
     
     startTransition(() => {
       if (typeParam) {
@@ -205,6 +206,23 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
               </div>
               <p className="text-lg font-bold text-rose-500">{formatMoney(data.expenses)}</p>
             </div>
+          </div>
+
+          {/* Pending Payments Link */}
+          <div 
+            onClick={() => handleNavigateToTransactions('pending')}
+            className="mt-3 bg-indigo-50 hover:bg-indigo-100 p-3 rounded-xl border border-indigo-100 flex items-center justify-between cursor-pointer transition-colors active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-indigo-200/50 rounded-full flex items-center justify-center text-indigo-600">
+                <Activity className="w-4 h-4" />
+              </div>
+              <div>
+                <p className="text-indigo-900 font-bold text-sm">ตรวจสอบลูกหนี้ / บิลค้างชำระ</p>
+                <p className="text-indigo-600/70 text-xs font-medium">ดูรายการที่ยังไม่ได้เก็บเงิน</p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-indigo-400" />
           </div>
 
         </motion.div>

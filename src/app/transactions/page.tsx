@@ -48,14 +48,14 @@ export default async function TransactionsPage(props: { searchParams: Promise<{ 
   }
 
   // Fetch transactions based on filter
-  const rawSales = (typeFilter === 'all' || typeFilter === 'sales') ? await prisma.sale.findMany({
+  const rawSales = (typeFilter === 'all' || typeFilter === 'sales' || typeFilter === 'pending') ? await prisma.sale.findMany({
     where: { date: dateFilter, ...userCondition },
     include: { customer: true, product: true },
     orderBy: { date: 'desc' },
     take: 100
   }) : [];
   
-  const rawPurchases = (typeFilter === 'all' || typeFilter === 'purchases') ? await prisma.purchase.findMany({
+  const rawPurchases = (typeFilter === 'all' || typeFilter === 'purchases' || typeFilter === 'pending') ? await prisma.purchase.findMany({
     where: { date: dateFilter, ...userCondition },
     include: { supplier: true, product: true },
     orderBy: { date: 'desc' },

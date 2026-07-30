@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2, Cat, Pencil, Loader2 } from 'lucide-react';
+import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2, Cat, Pencil, Loader2, Search } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -24,6 +24,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<TransactionRecord | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleEditSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,9 +71,25 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount);
   };
 
-  const totalSales = transactions.filter(t => t.type === 'ขายสินค้า').reduce((sum, t) => sum + t.amount, 0);
-  const totalPurchases = transactions.filter(t => t.type === 'ซื้อเข้า').reduce((sum, t) => sum + t.amount, 0);
-  const totalExpenses = transactions.filter(t => t.type === 'ค่าใช้จ่าย').reduce((sum, t) => sum + t.amount, 0);
+  const filteredTransactions = transactions.filter(t => {
+    // 1. Text Search Filter
+    const matchesSearch = searchQuery === '' || 
+      t.entityName?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      t.productName?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // 2. Type Filter (including new 'pending' filter)
+    let matchesType = true;
+    if (filterType === 'sales') matchesType = t.type === 'ขายสินค้า';
+    if (filterType === 'purchases') matchesType = t.type === 'ซื้อเข้า';
+    if (filterType === 'expenses') matchesType = t.type === 'ค่าใช้จ่าย';
+    if (filterType === 'pending') matchesType = t.status === 'PENDING';
+
+    return matchesSearch && matchesType;
+  });
+
+  const totalSales = filteredTransactions.filter(t => t.type === 'ขายสินค้า').reduce((sum, t) => sum + t.amount, 0);
+  const totalPurchases = filteredTransactions.filter(t => t.type === 'ซื้อเข้า').reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = filteredTransactions.filter(t => t.type === 'ค่าใช้จ่าย').reduce((sum, t) => sum + t.amount, 0);
 
   const handleOffsetChange = (newOffset: number) => {
     router.push(`/transactions?period=${period}&offset=${newOffset}${filterType !== 'all' ? `&type=${filterType}` : ''}`);
@@ -89,7 +106,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
   };
 
   const handleExportExcel = () => {
-    const excelData = transactions.map(t => ({
+    const excelData = filteredTransactions.map(t => ({
       'วันที่': new Date(t.date).toLocaleDateString('th-TH'),
       'ประเภท': t.type,
       'รายละเอียด': t.detail,
@@ -154,9 +171,9 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
         </div>
 
         {filterType !== 'all' && (
-          <div className="mb-3 inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-bold">
+          <div className="mb-3 inline-flex items-center gap-1.5 bg-indigo-50 border border-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm">
             <span>
-              เฉพาะ: {filterType === 'sales' ? 'ยอดขาย' : filterType === 'purchases' ? 'ซื้อเข้า' : 'รายจ่าย'}
+              เฉพาะ: {filterType === 'sales' ? 'ยอดขาย' : filterType === 'purchases' ? 'ซื้อเข้า' : filterType === 'expenses' ? 'รายจ่าย' : 'ค้างชำระ (ลูกหนี้)'}
             </span>
             <button onClick={clearFilter} className="bg-indigo-200/50 hover:bg-indigo-200 rounded-full p-0.5 transition-colors">
               <X className="w-3 h-3" />
@@ -164,11 +181,32 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
           </div>
         )}
 
+        <div className="mb-4 relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            className="block w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl leading-5 bg-white/80 backdrop-blur-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 sm:text-sm transition-all shadow-[0_2px_10px_rgb(0,0,0,0.02)]"
+            placeholder="ค้นหาชื่อลูกค้า, ซัพพลายเออร์, หรือสินค้า..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          {searchQuery && (
+            <button 
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
         <div className="">
           {viewMode === 'list' ? (
             <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white overflow-hidden">
               <div className="flex flex-col divide-y divide-slate-100">
-                {transactions.length > 0 ? transactions.map((t) => (
+                {filteredTransactions.length > 0 ? filteredTransactions.map((t) => (
                   <div key={t.id} className="p-4 hover:bg-slate-50 transition-colors flex items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -234,7 +272,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
           ) : (
             <div className="flex flex-col gap-6">
               {/* Sales Table */}
-              {(filterType === 'all' || filterType === 'sales') && (
+              {(filterType === 'all' || filterType === 'sales' || filterType === 'pending') && (
                 <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-sky-100 overflow-hidden">
                   <div 
                     onClick={() => handleTypeFilterClick('sales')}
@@ -272,7 +310,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-xs bg-white">
-                        {transactions.filter(t => t.type === 'ขายสินค้า').length > 0 ? transactions.filter(t => t.type === 'ขายสินค้า').map((t) => (
+                        {filteredTransactions.filter(t => t.type === 'ขายสินค้า').length > 0 ? filteredTransactions.filter(t => t.type === 'ขายสินค้า').map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
@@ -307,7 +345,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
               )}
 
               {/* Purchases Table */}
-              {(filterType === 'all' || filterType === 'purchases') && (
+              {(filterType === 'all' || filterType === 'purchases' || filterType === 'pending') && (
                 <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-amber-100 overflow-hidden">
                   <div 
                     onClick={() => handleTypeFilterClick('purchases')}
@@ -345,7 +383,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-xs bg-white">
-                        {transactions.filter(t => t.type === 'ซื้อเข้า').length > 0 ? transactions.filter(t => t.type === 'ซื้อเข้า').map((t) => (
+                        {filteredTransactions.filter(t => t.type === 'ซื้อเข้า').length > 0 ? filteredTransactions.filter(t => t.type === 'ซื้อเข้า').map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
@@ -416,7 +454,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-xs bg-white">
-                        {transactions.filter(t => t.type === 'ค่าใช้จ่าย').length > 0 ? transactions.filter(t => t.type === 'ค่าใช้จ่าย').map((t) => (
+                        {filteredTransactions.filter(t => t.type === 'ค่าใช้จ่าย').length > 0 ? filteredTransactions.filter(t => t.type === 'ค่าใช้จ่าย').map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
