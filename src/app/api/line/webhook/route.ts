@@ -35,121 +35,136 @@ export async function POST(req: Request) {
                 type: 'flex',
                 altText: 'คู่มือการพิมพ์ชูก้าร์แมวมึน',
                 contents: {
-                  type: 'bubble',
-                  header: {
-                    type: 'box',
-                    layout: 'vertical',
-                    backgroundColor: '#0F172A',
-                    contents: [
-                      {
-                        type: 'text',
-                        text: '💡 คู่มือการพิมพ์สั่งงานบอท',
-                        weight: 'bold',
-                        color: '#F8FAFC',
-                        size: 'md'
-                      },
-                      {
-                        type: 'text',
-                        text: 'พิมพ์เหมือนคุยกับคนได้เลย พิมพ์สั้นยาวได้หมด!',
-                        size: 'xs',
-                        color: '#94A3B8',
-                        margin: 'xs'
-                      }
-                    ]
-                  },
-                  body: {
-                    type: 'box',
-                    layout: 'vertical',
-                    spacing: 'md',
-                    contents: [
-                      {
+                  type: 'carousel',
+                  contents: [
+                    // --- Page 1: How to Record ---
+                    {
+                      type: 'bubble',
+                      header: {
                         type: 'box',
                         layout: 'vertical',
-                        spacing: 'xs',
+                        backgroundColor: '#0F172A',
+                        contents: [
+                          { type: 'text', text: '📝 1. วิธีพิมพ์บิล', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'พิมพ์เหมือนคุยกับคนได้เลย!', size: 'xs', color: '#94A3B8', margin: 'xs' }
+                        ]
+                      },
+                      body: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'md',
                         contents: [
                           {
-                            type: 'text',
-                            text: '1️⃣ ซื้อเข้า (ซื้อของมาลงร้าน)',
-                            weight: 'bold',
-                            size: 'sm',
-                            color: '#F59E0B'
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '📦 ซื้อเข้า', weight: 'bold', size: 'sm', color: '#F59E0B' },
+                              { type: 'text', text: '• ซื้อ กล้วย 30 โล โลละ 10 บาท จากคุณเต้', size: 'xs', color: '#475569', wrap: true }
+                            ]
                           },
+                          { type: 'separator' },
                           {
-                            type: 'text',
-                            text: '• ซื้อ มะละกอ ป้านัท 100 โล โลละ 10 บาท\n• ซื้อ ส้มโอ เฮียเล้ง 50 เข่ง เข่งละ 200 ติดไว้ก่อน',
-                            size: 'xs',
-                            color: '#475569',
-                            wrap: true
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '💵 ขายออก', weight: 'bold', size: 'sm', color: '#10B981' },
+                              { type: 'text', text: '• ขาย ทุเรียน นายเอ 5 โล โลละ 120 จ่ายแล้ว', size: 'xs', color: '#475569', wrap: true }
+                            ]
+                          },
+                          { type: 'separator' },
+                          {
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '💸 ค่าใช้จ่าย', weight: 'bold', size: 'sm', color: '#EF4444' },
+                              { type: 'text', text: '• ค่าน้ำมัน 500\n• ค่าแรง 400', size: 'xs', color: '#475569', wrap: true }
+                            ]
                           }
                         ]
                       },
-                      {
-                        type: 'separator'
-                      },
-                      {
+                      footer: {
                         type: 'box',
                         layout: 'vertical',
-                        spacing: 'xs',
+                        contents: [
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองพิมพ์: ขายแตงโม 10 โล โลละ 20', text: 'ขายแตงโม 10 โล โลละ 20 ให้พี่พร' } }
+                        ]
+                      }
+                    },
+                    // --- Page 2: Smart Features ---
+                    {
+                      type: 'bubble',
+                      header: {
+                        type: 'box',
+                        layout: 'vertical',
+                        backgroundColor: '#1E1B4B',
+                        contents: [
+                          { type: 'text', text: '🧠 2. ความฉลาดของบอท', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'ผมไม่ใช่บอทโง่ๆ นะครับ', size: 'xs', color: '#A5B4FC', margin: 'xs' }
+                        ]
+                      },
+                      body: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'md',
                         contents: [
                           {
-                            type: 'text',
-                            text: '2️⃣ ขายออก (ขายให้ลูกค้า)',
-                            weight: 'bold',
-                            size: 'sm',
-                            color: '#10B981'
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '🔍 ถ้าลืมบอกราคา/จำนวน?', weight: 'bold', size: 'sm', color: '#6366F1' },
+                              { type: 'text', text: 'ไม่ต้องตกใจ! ถ้าพิมพ์มาไม่ครบ ผมจะทักถามกลับให้พิมพ์เพิ่มทันทีครับ', size: 'xs', color: '#475569', wrap: true }
+                            ]
                           },
+                          { type: 'separator' },
                           {
-                            type: 'text',
-                            text: '• ขาย มะม่วง ป้าส้ม 10 ลัง ลังละ 350\n• ขาย ทุเรียน นายเอ 5 โล โลละ 120 จ่ายแล้ว',
-                            size: 'xs',
-                            color: '#475569',
-                            wrap: true
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '↩️ พิมพ์ผิด ทำไงดี?', weight: 'bold', size: 'sm', color: '#6366F1' },
+                              { type: 'text', text: 'ถ้าบันทึกไปแล้ว พิมพ์คำว่า "ยกเลิก" หรือ "ลบรายการล่าสุด" ผมจะลบออกให้ทันที', size: 'xs', color: '#475569', wrap: true }
+                            ]
                           }
                         ]
                       },
-                      {
-                        type: 'separator'
-                      },
-                      {
+                      footer: {
                         type: 'box',
                         layout: 'vertical',
-                        spacing: 'xs',
                         contents: [
-                          {
-                            type: 'text',
-                            text: '3️⃣ ค่าใช้จ่ายทั่วไป',
-                            weight: 'bold',
-                            size: 'sm',
-                            color: '#EF4444'
-                          },
-                          {
-                            type: 'text',
-                            text: '• ค่าน้ำมันรถ 500\n• ค่าซ่อมกล่องโฟม 300\n• ค่าแรง 400',
-                            size: 'xs',
-                            color: '#475569',
-                            wrap: true
-                          }
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองขอลบรายการล่าสุด', text: 'ยกเลิก' } }
                         ]
                       }
-                    ]
-                  },
-                  footer: {
-                    type: 'box',
-                    layout: 'vertical',
-                    contents: [
-                      {
-                        type: 'button',
-                        style: 'primary',
-                        color: '#3B82F6',
-                        height: 'sm',
-                        action: {
-                          type: 'uri',
-                          label: '📊 ไปดูแดชบอร์ดสรุปยอด',
-                          uri: 'https://sugarmeow.vercel.app/'
-                        }
+                    },
+                    // --- Page 3: Quick Actions ---
+                    {
+                      type: 'bubble',
+                      header: {
+                        type: 'box',
+                        layout: 'vertical',
+                        backgroundColor: '#064E3B',
+                        contents: [
+                          { type: 'text', text: '⚡ 3. เมนูลัด', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'กดปุ่มเพื่อสั่งงานด่วน', size: 'xs', color: '#6EE7B7', margin: 'xs' }
+                        ]
+                      },
+                      body: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'md',
+                        contents: [
+                          {
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: 'ต้องการดูสถิติและยอดทั้งหมดแบบกราฟสวยๆ สามารถเรียกดูได้ทันที หรือจะพิมพ์ว่า "สรุปยอด" ก็ได้ครับ', size: 'sm', color: '#475569', wrap: true }
+                            ]
+                          }
+                        ]
+                      },
+                      footer: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'sm',
+                        contents: [
+                          { type: 'button', style: 'primary', color: '#10B981', height: 'sm', action: { type: 'uri', label: '📊 ไปดูแดชบอร์ด', uri: 'https://sugarmeow.vercel.app/' } },
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ดูสรุปยอดในไลน์', text: 'สรุปยอด' } }
+                        ]
                       }
-                    ]
-                  }
+                    }
+                  ]
                 }
               }
             ]

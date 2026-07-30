@@ -1,6 +1,6 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { TrendingUp, ShoppingCart, Wallet, CreditCard, Activity, ChevronLeft, ChevronRight, BarChart2, Cat, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from 'recharts';
@@ -55,7 +55,7 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-3xl pointer-events-none mix-blend-multiply" />
       <div className="absolute top-[20%] right-[-10%] w-[30%] h-[40%] bg-emerald-400/20 rounded-full blur-3xl pointer-events-none mix-blend-multiply" />
 
-      <div className={`max-w-md mx-auto px-4 pt-4 pb-6 relative z-10 ${isPending ? 'opacity-60 pointer-events-none' : ''} transition-opacity duration-300`}>
+      <div className="max-w-md mx-auto px-4 pt-4 pb-6 relative z-10 transition-opacity duration-300">
         <header className="mb-4">
           <div className="flex items-center justify-between bg-white/50 backdrop-blur-sm rounded-xl p-1.5 shadow-sm border border-slate-200 w-full">
             <button onClick={() => handleOffsetChange(offset - 1)} className="p-2 hover:bg-white rounded-lg text-slate-500 transition-colors shadow-sm active:scale-95">
@@ -71,25 +71,31 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
           </div>
         </header>
 
-        {data.sales === 0 && data.purchases === 0 && data.expenses === 0 && data.profit === 0 ? (
+        <AnimatePresence mode="wait">
+          {data.sales === 0 && data.purchases === 0 && data.expenses === 0 && data.profit === 0 ? (
+            <motion.div 
+              key={`empty-${dateStr}`}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-col items-center justify-center h-64 mt-10 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-sm"
+            >
+              <div className="bg-indigo-50 p-4 rounded-full mb-3">
+                <Cat className="w-12 h-12 text-indigo-300" />
+              </div>
+              <p className="font-bold text-slate-600">ยังไม่มีรายการในช่วงเวลานี้</p>
+              <p className="text-xs text-slate-400 mt-1">กดปุ่ม + ด้านล่างเพื่อเพิ่มรายการแรกได้เลย!</p>
+            </motion.div>
+          ) : (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center justify-center h-64 mt-10 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-sm"
+            key={`data-${dateStr}`}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            className="flex flex-col gap-4"
           >
-            <div className="bg-indigo-50 p-4 rounded-full mb-3">
-              <Cat className="w-12 h-12 text-indigo-300" />
-            </div>
-            <p className="font-bold text-slate-600">ยังไม่มีรายการในช่วงเวลานี้</p>
-            <p className="text-xs text-slate-400 mt-1">กดปุ่ม + ด้านล่างเพื่อเพิ่มรายการแรกได้เลย!</p>
-          </motion.div>
-        ) : (
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-          className="flex flex-col gap-4"
-        >
           {/* Chart */}
           <div className="bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-[0_4px_20px_rgb(0,0,0,0.03)] border border-white">
             <h3 className="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
@@ -202,7 +208,8 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
           </div>
 
         </motion.div>
-        )}
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
