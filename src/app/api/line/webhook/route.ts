@@ -27,7 +27,7 @@ export async function POST(req: Request) {
         }
 
         // Check if user requests help/guide
-        if (/^(วิธีใช้|คู่มือ|วิธีใช้งาน|help|ตัวอย่าง|ตัวอย่างการพิมพ์|สอนหน่อย)$/i.test(text)) {
+        if (/^(วิธีใช้|วิธีใช้่|คู่มือ|คู่มทือ|วิธีใช้งาน|help|ช่วยด้วย|ช่วยด้วยครับ|ช่วยด้วยค่ะ|ตัวอย่าง|ตัวอย่างการพิมพ์|สอนหน่อย|เออลองพิมพ์|พิมพ์ไง|ใช้อย่างไร)$/i.test(text)) {
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
