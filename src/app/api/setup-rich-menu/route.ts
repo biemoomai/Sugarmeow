@@ -17,13 +17,13 @@ export async function GET() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        size: { width: 1200, height: 810 },
+        size: { width: 2500, height: 1686 },
         selected: true,
         name: 'Dashboard Menu',
         chatBarText: 'เปิดเมนู',
         areas: [
           {
-            bounds: { x: 0, y: 0, width: 1200, height: 810 },
+            bounds: { x: 0, y: 0, width: 2500, height: 1686 },
             action: { type: 'uri', uri: 'https://sugarmeow.vercel.app' }
           }
         ]
