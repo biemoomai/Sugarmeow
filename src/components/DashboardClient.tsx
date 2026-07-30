@@ -66,8 +66,8 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
               {isPending && <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />}
               <p className="text-sm font-bold text-indigo-700 text-center">{dateStr}</p>
             </div>
-            <button onClick={() => handleOffsetChange(offset + 1)} className="p-2 hover:bg-white rounded-lg text-slate-500 transition-colors shadow-sm active:scale-95" disabled={offset === 0}>
-              <ChevronRight className={`w-5 h-5 ${offset === 0 ? 'opacity-30' : ''}`} />
+            <button onClick={() => handleOffsetChange(offset + 1)} className="p-2 hover:bg-white rounded-lg text-slate-500 transition-colors shadow-sm active:scale-95">
+              <ChevronRight className="w-5 h-5" />
             </button>
           </div>
         </header>

@@ -139,8 +139,8 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <p className="text-xs font-bold text-indigo-700 w-[70px] text-center">{dateStr}</p>
-              <button onClick={() => handleOffsetChange(offset + 1)} className="p-0.5 hover:bg-white rounded text-slate-500 transition-colors shadow-sm active:scale-95" disabled={offset === 0}>
-                <ChevronRight className={`w-4 h-4 ${offset === 0 ? 'opacity-30' : ''}`} />
+              <button onClick={() => handleOffsetChange(offset + 1)} className="p-0.5 hover:bg-white rounded text-slate-500 transition-colors shadow-sm active:scale-95">
+                <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           </div>
