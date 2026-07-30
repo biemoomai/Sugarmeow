@@ -7,9 +7,6 @@ export async function GET() {
     return NextResponse.json({ error: 'Missing LINE_CHANNEL_ACCESS_TOKEN' }, { status: 500 });
   }
 
-  const client = new Client({
-    channelAccessToken: token
-  });
 
   try {
     // 1. Create rich menu
