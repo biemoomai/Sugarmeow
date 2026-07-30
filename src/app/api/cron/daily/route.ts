@@ -13,60 +13,72 @@ export async function GET(req: NextRequest) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const purchases = await prisma.purchase.aggregate({
-      _sum: { totalAmount: true },
-      where: { date: { gte: today } }
+    // Get all users who have registered/have drafts or transactions. 
+    // We can get unique lineUserId from TransactionDraft as it stores their state.
+    const users = await prisma.transactionDraft.findMany({
+      select: { lineUserId: true }
     });
-
-    const sales = await prisma.sale.aggregate({
-      _sum: { totalAmount: true },
-      where: { date: { gte: today } }
-    });
-
-    const expenses = await prisma.expense.aggregate({
-      _sum: { amount: true },
-      where: { date: { gte: today } }
-    });
-
-    // Check pending payments
-    const pendingSales = await prisma.sale.findMany({
-      where: { paymentStatus: 'PENDING' },
-      include: { customer: true }
-    });
-
-    const totalPurchases = purchases._sum.totalAmount || 0;
-    const totalSales = sales._sum.totalAmount || 0;
-    const totalExpenses = expenses._sum.amount || 0;
-    const estProfit = totalSales - totalPurchases - totalExpenses;
 
     const formatMoney = (amount: number) => {
       return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(amount);
     };
 
-    let report = `📊 สรุปยอดประจำวัน\n\n`;
-    report += `🟢 ยอดขาย: ${formatMoney(totalSales)}\n`;
-    report += `🔴 ยอดซื้อ: ${formatMoney(totalPurchases)}\n`;
-    report += `🔴 ค่าใช้จ่าย: ${formatMoney(totalExpenses)}\n`;
-    report += `✨ กำไรโดยประมาณ: ${formatMoney(estProfit)}\n\n`;
+    for (const user of users) {
+      const lineUserId = user.lineUserId;
+      if (!lineUserId) continue;
 
-    if (pendingSales.length > 0) {
-      report += `⚠️ รายการค้างชำระ:\n`;
-      pendingSales.forEach(sale => {
-        report += `- ${sale.customer.name}: ${formatMoney(sale.totalAmount)}\n`;
-      });
-    } else {
-      report += `✅ ไม่มีรายการค้างชำระ`;
+      const [purchases, sales, expenses, pendingSales] = await Promise.all([
+        prisma.purchase.aggregate({
+          _sum: { totalAmount: true },
+          where: { date: { gte: today }, lineUserId }
+        }),
+        prisma.sale.aggregate({
+          _sum: { totalAmount: true },
+          where: { date: { gte: today }, lineUserId }
+        }),
+        prisma.expense.aggregate({
+          _sum: { amount: true },
+          where: { date: { gte: today }, lineUserId }
+        }),
+        prisma.sale.findMany({
+          where: { paymentStatus: 'PENDING', lineUserId },
+          include: { customer: true }
+        })
+      ]);
+
+      const totalPurchases = purchases._sum.totalAmount || 0;
+      const totalSales = sales._sum.totalAmount || 0;
+      const totalExpenses = expenses._sum.amount || 0;
+      const estProfit = totalSales - totalPurchases - totalExpenses;
+
+      // Only send if there's any activity today
+      if (totalPurchases === 0 && totalSales === 0 && totalExpenses === 0) {
+        continue;
+      }
+
+      let report = `📊 สรุปยอดประจำวัน\n\n`;
+      report += `🟢 ยอดขาย: ${formatMoney(totalSales)}\n`;
+      report += `🔴 ยอดซื้อ: ${formatMoney(totalPurchases)}\n`;
+      report += `🔴 ค่าใช้จ่าย: ${formatMoney(totalExpenses)}\n`;
+      report += `✨ กำไรโดยประมาณ: ${formatMoney(estProfit)}\n\n`;
+
+      if (pendingSales.length > 0) {
+        report += `⚠️ รายการค้างชำระ:\n`;
+        pendingSales.forEach(sale => {
+          report += `- ${sale.customer.name}: ${formatMoney(sale.totalAmount)}\n`;
+        });
+      } else {
+        report += `✅ ไม่มีรายการค้างชำระ`;
+      }
+
+      try {
+        await lineClient.pushMessage({ to: lineUserId, messages: [{ type: 'text', text: report }] });
+      } catch (e) {
+        console.error(`Failed to send message to ${lineUserId}:`, e);
+      }
     }
 
-    // Broadcast to the owner (assuming owner user ID is configured)
-    const ownerLineId = process.env.OWNER_LINE_USER_ID;
-    if (ownerLineId) {
-      await lineClient.pushMessage({ to: ownerLineId, messages: [{ type: 'text', text: report }] });
-    } else {
-      console.log("OWNER_LINE_USER_ID is not set. Would have sent:", report);
-    }
-
-    return NextResponse.json({ success: true, message: 'Daily report sent' }, { status: 200 });
+    return NextResponse.json({ success: true, message: 'Daily reports sent' }, { status: 200 });
   } catch (error) {
     console.error('Cron error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

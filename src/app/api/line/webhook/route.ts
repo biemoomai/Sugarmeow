@@ -130,6 +130,48 @@ export async function POST(req: Request) {
                         ]
                       }
                     },
+                    // --- Page 2.5: Advanced Features ---
+                    {
+                      type: 'bubble',
+                      header: {
+                        type: 'box',
+                        layout: 'vertical',
+                        backgroundColor: '#9333EA',
+                        contents: [
+                          { type: 'text', text: '✨ 3. ฟีเจอร์ขั้นสูง', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'ระบุวันย้อนหลัง & สั่งแก้บิล', size: 'xs', color: '#D8B4FE', margin: 'xs' }
+                        ]
+                      },
+                      body: {
+                        type: 'box',
+                        layout: 'vertical',
+                        spacing: 'md',
+                        contents: [
+                          {
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '📅 ระบุวันที่ได้เลย', weight: 'bold', size: 'sm', color: '#A855F7' },
+                              { type: 'text', text: '• ขายแตงโมให้เจ๊ศรี 20 โล พรุ่งนี้\n• จ่ายค่าไฟ 500 บาท เมื่อวาน', size: 'xs', color: '#475569', wrap: true }
+                            ]
+                          },
+                          { type: 'separator' },
+                          {
+                            type: 'box', layout: 'vertical', spacing: 'xs',
+                            contents: [
+                              { type: 'text', text: '✏️ สั่งแก้บิลของวันนี้', weight: 'bold', size: 'sm', color: '#A855F7' },
+                              { type: 'text', text: '• แก้ยอดขายคุณเต้เป็น 500\n• แก้บิลคุณสมหญิง เปลี่ยนเป็นจ่ายแล้ว', size: 'xs', color: '#475569', wrap: true }
+                            ]
+                          }
+                        ]
+                      },
+                      footer: {
+                        type: 'box',
+                        layout: 'vertical',
+                        contents: [
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลอง: แก้ยอดขายคุณเต้เป็น 500', text: 'แก้ยอดขายคุณเต้เป็น 500' } }
+                        ]
+                      }
+                    },
                     // --- Page 3: Quick Actions ---
                     {
                       type: 'bubble',
@@ -138,7 +180,7 @@ export async function POST(req: Request) {
                         layout: 'vertical',
                         backgroundColor: '#064E3B',
                         contents: [
-                          { type: 'text', text: '⚡ 3. เมนูลัด', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: '⚡ 4. เมนูลัด', weight: 'bold', color: '#F8FAFC', size: 'md' },
                           { type: 'text', text: 'กดปุ่มเพื่อสั่งงานด่วน', size: 'xs', color: '#6EE7B7', margin: 'xs' }
                         ]
                       },
@@ -504,6 +546,84 @@ export async function POST(req: Request) {
             });
             continue;
           }
+          if (data.intent === 'EDIT') {
+            const todayStart = startOfDay(new Date());
+            
+            // Search for today's transactions matching the name
+            const [sales, purchases] = await Promise.all([
+              prisma.sale.findMany({
+                where: { lineUserId: userId, customer: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
+                orderBy: { createdAt: 'desc' },
+                take: 1
+              }),
+              prisma.purchase.findMany({
+                where: { lineUserId: userId, supplier: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
+                orderBy: { createdAt: 'desc' },
+                take: 1
+              })
+            ]);
+            
+            const targetSale = sales[0];
+            const targetPurchase = purchases[0];
+            
+            let target = null;
+            let targetType = '';
+            
+            if (targetSale && targetPurchase) {
+              if (targetSale.createdAt > targetPurchase.createdAt) {
+                target = targetSale;
+                targetType = 'SALE';
+              } else {
+                target = targetPurchase;
+                targetType = 'PURCHASE';
+              }
+            } else if (targetSale) {
+              target = targetSale;
+              targetType = 'SALE';
+            } else if (targetPurchase) {
+              target = targetPurchase;
+              targetType = 'PURCHASE';
+            }
+
+            if (!target) {
+              await lineClient.replyMessage({
+                replyToken: event.replyToken,
+                messages: [{ type: 'text', text: `หาบิลของ "${data.editTargetName}" ในวันนี้ไม่เจอเลยครับ 🥲 อาจจะเพราะชื่อไม่ตรงกัน 100% แนะนำให้เข้าไปกดแก้ในเว็บจะชัวร์สุดครับ` }]
+              });
+              continue;
+            }
+
+            // Update it!
+            const updateData: any = {};
+            if (data.totalAmount) updateData.totalAmount = data.totalAmount;
+            if (data.status) updateData.paymentStatus = data.status;
+            if (data.quantity) updateData.quantity = data.quantity;
+            if (data.unitPrice) updateData.unitPrice = data.unitPrice;
+            
+            // If they change product name
+            if (data.product || data.editTargetProduct) {
+              const productName = data.product || data.editTargetProduct;
+              if (productName) {
+                let product = await prisma.product.findFirst({ where: { name: productName } });
+                if (!product) {
+                  product = await prisma.product.create({ data: { name: productName } });
+                }
+                updateData.productId = product.id;
+              }
+            }
+
+            if (targetType === 'SALE') {
+              await prisma.sale.update({ where: { id: target.id }, data: updateData });
+            } else {
+              await prisma.purchase.update({ where: { id: target.id }, data: updateData });
+            }
+
+            await lineClient.replyMessage({
+              replyToken: event.replyToken,
+              messages: [{ type: 'text', text: `✨ อัปเดตบิลของ "${data.editTargetName}" ล่าสุดให้เรียบร้อยแล้วครับ!` }]
+            });
+            continue;
+          }
 
           let summaryText = '';
           if (data.intent === 'SALE') {
@@ -626,6 +746,12 @@ export async function POST(req: Request) {
           });
         }
       } else if (event.type === 'postback') {
+        try {
+          await lineClient.showLoadingAnimation({ chatId: userId, loadingSeconds: 5 });
+        } catch (e) {
+          console.error("Failed to show loading animation:", e);
+        }
+        
         const data = event.postback.data;
         if (data === 'action=cancel') {
            try {
@@ -660,6 +786,7 @@ export async function POST(req: Request) {
 
                 await prisma.sale.create({
                   data: {
+                    date: payload.date ? new Date(payload.date) : new Date(),
                     customerId: customer.id,
                     productId: product.id,
                     quantityKg: payload.quantity,
@@ -679,6 +806,7 @@ export async function POST(req: Request) {
 
                 await prisma.purchase.create({
                   data: {
+                    date: payload.date ? new Date(payload.date) : new Date(),
                     supplierId: supplier.id,
                     productId: product.id,
                     quantityKg: payload.quantity,
@@ -690,6 +818,7 @@ export async function POST(req: Request) {
              } else if (payload.intent === 'EXPENSE') {
                 await prisma.expense.create({
                   data: {
+                    date: payload.date ? new Date(payload.date) : new Date(),
                     category: payload.expenseCategory || 'ทั่วไป',
                     amount: payload.totalAmount,
                     description: payload.expenseDescription || '',

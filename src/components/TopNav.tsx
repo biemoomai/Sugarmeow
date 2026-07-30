@@ -44,7 +44,8 @@ export default function TopNav() {
   };
 
   return (
-    <div className="sticky top-0 z-40 bg-[#F8FAFC]/80 backdrop-blur-xl border-b border-slate-200/50 pt-4 pb-3 px-4 flex items-center justify-between gap-3 transition-opacity duration-300">
+    <>
+      <div className="sticky top-0 z-40 bg-[#F8FAFC]/80 backdrop-blur-xl border-b border-slate-200/50 pt-4 pb-3 px-4 flex items-center justify-between gap-3 transition-opacity duration-300">
       <div className="flex-1 bg-slate-200/50 backdrop-blur-md p-1 rounded-xl shadow-inner border border-slate-200/60 max-w-md mx-auto">
         <div className="grid grid-cols-4 w-full gap-1">
           {tabs.map((tab) => {
@@ -78,6 +79,7 @@ export default function TopNav() {
       >
         <LogOut className="w-5 h-5" />
       </button>
+      </div>
 
       {/* Full Screen Loading Overlay */}
       <AnimatePresence>
@@ -99,6 +101,6 @@ export default function TopNav() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </>
   );
 }

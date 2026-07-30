@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2, Cat } from 'lucide-react';
+import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2, Cat, Pencil, Loader2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -22,6 +22,34 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<TransactionRecord | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  const handleEditSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingTransaction) return;
+    
+    setIsSaving(true);
+    try {
+      const { editTransaction } = await import('@/app/actions/editTransaction');
+      const res = await editTransaction(editingTransaction.id, {
+        date: new Date(editingTransaction.date),
+        entityName: editingTransaction.entityName,
+        productName: editingTransaction.productName,
+        amount: Number(editingTransaction.amount),
+        status: editingTransaction.status
+      });
+      
+      if (!res.success) {
+        alert('แก้ไขไม่สำเร็จ: ' + res.error);
+      } else {
+        setEditingTransaction(null);
+      }
+    } catch (err) {
+      alert('เกิดข้อผิดพลาดตอนแก้ไข');
+    }
+    setIsSaving(false);
+  };
 
   const handleDelete = async (id: string) => {
     if (confirm('แน่ใจนะว่าจะลบรายการนี้? ลบแล้วกู้คืนไม่ได้นะ!')) {
@@ -166,13 +194,21 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         }`}>
                           {t.type === 'ขายสินค้า' ? '+' : '-'}{formatMoney(t.amount)}
                         </p>
-                        <button 
-                          onClick={() => handleDelete(t.id)}
-                          disabled={isDeleting === t.id}
-                          className="p-1 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex bg-slate-100 rounded-lg p-0.5 ml-1">
+                          <button 
+                            onClick={() => setEditingTransaction(t)}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-md transition-all shadow-sm"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(t.id)}
+                            disabled={isDeleting === t.id}
+                            className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-white rounded-md transition-all shadow-sm"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                       <div className="mt-1">
                         {t.status === 'PAID' ? (
@@ -245,7 +281,10 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             <td className="px-2 py-3 text-center whitespace-nowrap">
                               {t.status === 'PAID' ? <span className="text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap">จ่ายแล้ว</span> : <span className="text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap">ค้างชำระ</span>}
                             </td>
-                            <td className="px-2 py-3 pr-4 text-right">
+                            <td className="px-2 py-3 pr-4 text-right whitespace-nowrap">
+                              <button onClick={() => setEditingTransaction(t)} className="text-slate-300 hover:text-indigo-500 transition-colors mr-3">
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
                               <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -315,7 +354,10 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             <td className="px-2 py-3 text-center">
                               {t.status === 'PAID' ? <span className="text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold">จ่ายแล้ว</span> : <span className="text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold">ค้างชำระ</span>}
                             </td>
-                            <td className="px-2 py-3 pr-4 text-right">
+                            <td className="px-2 py-3 pr-4 text-right whitespace-nowrap">
+                              <button onClick={() => setEditingTransaction(t)} className="text-slate-300 hover:text-indigo-500 transition-colors mr-3">
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
                               <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -380,7 +422,10 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
                             <td className="px-2 py-3 text-slate-600 text-xs truncate">{t.productName}</td>
                             <td className="px-2 py-3 text-right font-black text-rose-600 whitespace-nowrap">-{formatMoney(t.amount)}</td>
-                            <td className="px-2 py-3 pr-4 text-right">
+                            <td className="px-2 py-3 pr-4 text-right whitespace-nowrap">
+                              <button onClick={() => setEditingTransaction(t)} className="text-slate-300 hover:text-indigo-500 transition-colors mr-3">
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
                               <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>
@@ -405,6 +450,128 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
           )}
         </div>
       </motion.div>
+
+      {/* Edit Modal */}
+      {editingTransaction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl"
+          >
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                <Pencil className="w-4 h-4 text-indigo-500" /> แก้ไขรายการ
+              </h3>
+              <button onClick={() => setEditingTransaction(null)} className="p-1 hover:bg-slate-200 rounded-full text-slate-400 transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditSave} className="p-5 flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-bold text-slate-500 mb-1.5 block">วันที่</label>
+                <input 
+                  type="date" 
+                  value={new Date(editingTransaction.date).toISOString().split('T')[0]} 
+                  onChange={(e) => setEditingTransaction({ ...editingTransaction, date: new Date(e.target.value).toISOString() })}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                  required
+                />
+              </div>
+
+              {editingTransaction.type !== 'ค่าใช้จ่าย' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">ลูกค้า/ซัพพลายเออร์</label>
+                    <input 
+                      type="text" 
+                      value={editingTransaction.entityName || ''} 
+                      onChange={(e) => setEditingTransaction({ ...editingTransaction, entityName: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">สินค้า</label>
+                    <input 
+                      type="text" 
+                      value={editingTransaction.productName || ''} 
+                      onChange={(e) => setEditingTransaction({ ...editingTransaction, productName: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {editingTransaction.type === 'ค่าใช้จ่าย' && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">หมวดหมู่</label>
+                    <input 
+                      type="text" 
+                      value={editingTransaction.entityName || ''} 
+                      onChange={(e) => setEditingTransaction({ ...editingTransaction, entityName: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">รายละเอียด</label>
+                    <input 
+                      type="text" 
+                      value={editingTransaction.productName || ''} 
+                      onChange={(e) => setEditingTransaction({ ...editingTransaction, productName: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-500 mb-1.5 block">ยอดเงิน (บาท)</label>
+                  <input 
+                    type="number" 
+                    value={editingTransaction.amount} 
+                    onChange={(e) => setEditingTransaction({ ...editingTransaction, amount: Number(e.target.value) })}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    required
+                  />
+                </div>
+                {editingTransaction.type !== 'ค่าใช้จ่าย' && (
+                  <div>
+                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">สถานะ</label>
+                    <select 
+                      value={editingTransaction.status} 
+                      onChange={(e) => setEditingTransaction({ ...editingTransaction, status: e.target.value })}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
+                    >
+                      <option value="PAID">จ่ายแล้ว</option>
+                      <option value="PENDING">ค้างชำระ</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-2 pt-4 border-t border-slate-100 flex gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setEditingTransaction(null)}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-500 bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  ยกเลิก
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSaving}
+                  className="flex-1 py-2.5 rounded-xl font-bold text-sm text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : 'บันทึกการแก้ไข'}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

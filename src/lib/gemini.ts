@@ -14,8 +14,9 @@ const groq = new Groq({ apiKey: groqApiKey });
 const cerebrasApiKey = process.env.CEREBRAS_API_KEY || '';
 
 export type ExtractedTransaction = {
-  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE' | 'REPORT';
+  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE' | 'REPORT' | 'EDIT';
   replyMessage?: string;
+  date?: string;
   name: string;
   product: string;
   quantity: number;
@@ -29,6 +30,9 @@ export type ExtractedTransaction = {
   reportPeriod?: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'ALL';
   reportEntity?: string;
   reportProduct?: string;
+  // Edit fields
+  editTargetName?: string;
+  editTargetProduct?: string;
 };
 
 export async function extractTransaction(text: string, previousContext?: string): Promise<ExtractedTransaction> {
@@ -47,7 +51,12 @@ IMPORTANT RULES:
    - Parse 'reportPeriod' to 'TODAY', 'WEEK', 'MONTH', 'YEAR', or 'ALL' (default is 'TODAY' if not specified).
    - Extract 'reportEntity' if they ask about a specific person (e.g. "เจ๊ศรี").
    - Extract 'reportProduct' if they ask about a specific product (e.g. "กล้วย").
-7. If the message contains typos, try to handle them gracefully. If the message is complete nonsense, gibberish, or you cannot understand it at all, set intent to "INCOMPLETE" and write a polite confused message in "replyMessage" asking them to retype it clearly.
+7. If the user asks to edit or update a past transaction (e.g., "แก้ยอดขายคุณเต้เป็น 500", "แก้บิลเจ๊ศรีที่ซื้อกล้วยเมื่อกี้ เปลี่ยนราคาเป็น 40"), set intent to "EDIT".
+   - Extract 'editTargetName' to the name of the person whose bill they want to edit (e.g. "คุณเต้", "เจ๊ศรี").
+   - Extract 'editTargetProduct' if they specify which product to edit (e.g. "กล้วย").
+   - Extract the NEW values they want to update into the standard fields (e.g. 'totalAmount': 500, 'unitPrice': 40).
+8. If the message contains typos, try to handle them gracefully. If the message is complete nonsense, gibberish, or you cannot understand it at all, set intent to "INCOMPLETE" and write a polite confused message in "replyMessage" asking them to retype it clearly.
+9. If the user specifies a date (e.g. "พรุ่งนี้", "เมื่อวาน", "วันที่ 12"), calculate it relative to the current date and time (${new Date().toLocaleString('th-TH')}) and return it as an ISO string in the 'date' field (e.g., "2026-07-31T00:00:00.000Z"). If no date is mentioned, omit the 'date' field.
 
 CONVERSATIONAL CONTEXT:
 The user might be correcting a PREVIOUS transaction or answering your question from a previous INCOMPLETE state.
@@ -58,8 +67,9 @@ If PREVIOUS_TRANSACTION is provided:
 
 Expected JSON Structure:
 {
-  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO" | "INCOMPLETE" | "REPORT",
+  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO" | "INCOMPLETE" | "REPORT" | "EDIT",
   "replyMessage": "string",
+  "date": "string",
   "name": "string",
   "product": "string",
   "quantity": number,
@@ -71,7 +81,9 @@ Expected JSON Structure:
   "reportType": "ALL" | "SALES" | "PURCHASES" | "EXPENSES",
   "reportPeriod": "TODAY" | "WEEK" | "MONTH" | "YEAR" | "ALL",
   "reportEntity": "string",
-  "reportProduct": "string"
+  "reportProduct": "string",
+  "editTargetName": "string",
+  "editTargetProduct": "string"
 }
 
 PREVIOUS_TRANSACTION:
