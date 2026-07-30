@@ -1,10 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List } from 'lucide-react';
+import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
+import { deleteTransaction } from '@/app/actions/deleteTransaction';
 
 type TransactionRecord = {
   id: string;
@@ -18,7 +19,23 @@ type TransactionRecord = {
 export default function TransactionsClient({ transactions, dateStr, period, offset, filterType }: { transactions: TransactionRecord[]; dateStr: string; period: string; offset: number; filterType: string }) {
   const router = useRouter();
   const [viewMode, setViewMode] = useState<'list' | 'table'>('list');
-  
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+
+  const handleDelete = async (id: string) => {
+    if (confirm('แน่ใจนะว่าจะลบรายการนี้? ลบแล้วกู้คืนไม่ได้นะ!')) {
+      setIsDeleting(id);
+      try {
+        const res = await deleteTransaction(id);
+        if (!res.success) {
+          alert('ลบไม่ได้ว่ะ: ' + res.error);
+        }
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดตอนลบ');
+      }
+      setIsDeleting(null);
+    }
+  };
+
   const formatMoney = (amount: number) => {
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount);
   };
@@ -138,13 +155,22 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                     </div>
                     
                     <div className="text-right shrink-0 flex flex-col items-end">
-                      <p className={`font-black text-[15px] ${
-                        t.type === 'ขายสินค้า' ? 'text-sky-600' :
-                        t.type === 'ซื้อเข้า' ? 'text-amber-600' :
-                        'text-rose-600'
-                      }`}>
-                        {t.type === 'ขายสินค้า' ? '+' : '-'}{formatMoney(t.amount)}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <p className={`font-black text-[15px] ${
+                          t.type === 'ขายสินค้า' ? 'text-sky-600' :
+                          t.type === 'ซื้อเข้า' ? 'text-amber-600' :
+                          'text-rose-600'
+                        }`}>
+                          {t.type === 'ขายสินค้า' ? '+' : '-'}{formatMoney(t.amount)}
+                        </p>
+                        <button 
+                          onClick={() => handleDelete(t.id)}
+                          disabled={isDeleting === t.id}
+                          className="p-1 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-md transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                       <div className="mt-1">
                         {t.status === 'PAID' ? (
                           <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-bold">จ่ายแล้ว</span>
@@ -185,16 +211,18 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                     <table className="w-full text-left border-collapse table-fixed">
                       <colgroup>
                         <col className="w-[18%]" />
-                        <col className="w-[38%]" />
-                        <col className="w-[22%]" />
-                        <col className="w-[22%]" />
+                        <col className="w-[34%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[8%]" />
                       </colgroup>
                       <thead>
                         <tr className="bg-sky-50/30 text-sky-700/60 text-[10px] font-bold uppercase tracking-wider border-b border-sky-100/50">
                           <th className="px-2 py-2 pl-4">วันที่</th>
                           <th className="px-2 py-2">รายการ</th>
                           <th className="px-2 py-2 text-right">ยอดเงิน</th>
-                          <th className="px-2 py-2 pr-4 text-center">สถานะ</th>
+                          <th className="px-2 py-2 text-center">สถานะ</th>
+                          <th className="px-2 py-2 pr-4 text-right">ลบ</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-xs bg-white">
@@ -203,8 +231,13 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.detail}</td>
                             <td className="px-2 py-3 text-right font-black text-sky-600 whitespace-nowrap">+{formatMoney(t.amount)}</td>
-                            <td className="px-2 py-3 pr-4 text-center whitespace-nowrap">
+                            <td className="px-2 py-3 text-center whitespace-nowrap">
                               {t.status === 'PAID' ? <span className="text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap">จ่ายแล้ว</span> : <span className="text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap">ค้างชำระ</span>}
+                            </td>
+                            <td className="px-2 py-3 pr-4 text-right">
+                              <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </td>
                           </tr>
                         )) : (
@@ -238,16 +271,18 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                     <table className="w-full text-left border-collapse table-fixed">
                       <colgroup>
                         <col className="w-[18%]" />
-                        <col className="w-[38%]" />
-                        <col className="w-[22%]" />
-                        <col className="w-[22%]" />
+                        <col className="w-[34%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[8%]" />
                       </colgroup>
                       <thead>
                         <tr className="bg-amber-50/30 text-amber-700/60 text-[10px] font-bold uppercase tracking-wider border-b border-amber-100/50">
                           <th className="px-2 py-2 pl-4">วันที่</th>
                           <th className="px-2 py-2">รายการ</th>
                           <th className="px-2 py-2 text-right">ยอดเงิน</th>
-                          <th className="px-2 py-2 pr-4 text-center">สถานะ</th>
+                          <th className="px-2 py-2 text-center">สถานะ</th>
+                          <th className="px-2 py-2 pr-4 text-right">ลบ</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-xs bg-white">
@@ -256,8 +291,13 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.detail}</td>
                             <td className="px-2 py-3 text-right font-black text-amber-600 whitespace-nowrap">-{formatMoney(t.amount)}</td>
-                            <td className="px-2 py-3 pr-4 text-center">
+                            <td className="px-2 py-3 text-center">
                               {t.status === 'PAID' ? <span className="text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold">จ่ายแล้ว</span> : <span className="text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold">ค้างชำระ</span>}
+                            </td>
+                            <td className="px-2 py-3 pr-4 text-right">
+                              <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
                             </td>
                           </tr>
                         )) : (
@@ -291,14 +331,16 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                     <table className="w-full text-left border-collapse table-fixed">
                       <colgroup>
                         <col className="w-[20%]" />
-                        <col className="w-[50%]" />
-                        <col className="w-[30%]" />
+                        <col className="w-[45%]" />
+                        <col className="w-[25%]" />
+                        <col className="w-[10%]" />
                       </colgroup>
                       <thead>
                         <tr className="bg-rose-50/30 text-rose-700/60 text-[10px] font-bold uppercase tracking-wider border-b border-rose-100/50">
                           <th className="px-2 py-2 pl-4">วันที่</th>
                           <th className="px-2 py-2">รายการ</th>
-                          <th className="px-2 py-2 pr-4 text-right">ยอดเงิน</th>
+                          <th className="px-2 py-2 text-right">ยอดเงิน</th>
+                          <th className="px-2 py-2 pr-4 text-right">ลบ</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-50 text-xs bg-white">
@@ -306,7 +348,12 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
                             <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.detail}</td>
-                            <td className="px-2 py-3 pr-4 text-right font-black text-rose-600 whitespace-nowrap">-{formatMoney(t.amount)}</td>
+                            <td className="px-2 py-3 text-right font-black text-rose-600 whitespace-nowrap">-{formatMoney(t.amount)}</td>
+                            <td className="px-2 py-3 pr-4 text-right">
+                              <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
                           </tr>
                         )) : (
                           <tr><td colSpan={3} className="p-6 text-center text-slate-400 text-xs">ไม่มีข้อมูลค่าใช้จ่าย</td></tr>
