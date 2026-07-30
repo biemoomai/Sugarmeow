@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String
+  purchases Purchase[]
+  createdAt DateTime   @default(now())
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  sales     Sale[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id        Int        @id @default(autoincrement())
+  name      String
+  grade     String?
+  purchases Purchase[]
+  sales     Sale[]
+  createdAt DateTime   @default(now())
+}
+
+model Purchase {
+  id           Int      @id @default(autoincrement())
+  date         DateTime @default(now())
+  supplierId   Int
+  productId    Int
+  quantityKg   Float
+  unitPrice    Float
+  totalAmount  Float
+  
+  supplier     Supplier @relation(fields: [supplierId], references: [id])
+  product      Product  @relation(fields: [productId], references: [id])
+  
+  createdAt    DateTime @default(now())
+}
+
+model Sale {
+  id            Int      @id @default(autoincrement())
+  date          DateTime @default(now())
+  customerId    Int
+  productId     Int
+  quantityKg    Float
+  unitPrice     Float
+  totalAmount   Float
+  paymentStatus String   @default("PAID") // "PAID", "PENDING"
+  paymentDate   DateTime?
+  
+  customer      Customer @relation(fields: [customerId], references: [id])
+  product       Product  @relation(fields: [productId], references: [id])
+
+  createdAt     DateTime @default(now())
+}
+
+model Expense {
+  id          Int      @id @default(autoincrement())
+  date        DateTime @default(now())
+  category    String
+  amount      Float
+  description String?
+  createdAt   DateTime @default(now())
+}
+
+model TransactionDraft {
+  id         String   @id @default(cuid())
+  lineUserId String   @unique
+  payload    String   // JSON string of the extracted data
+  createdAt  DateTime @default(now())
+}
