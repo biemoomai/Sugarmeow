@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         // Check if user requests report/dashboard
         // Check if user requests report/dashboard
         if (/^(รายงาน|แดชบอร์ด|dashboard|report|เมนู|สรุปยอด|เข้าเว็บ)$/i.test(text)) {
-          const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
+          const dashboardUrl = `https://sugarmeow.vercel.app/`;
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
@@ -224,7 +224,7 @@ export async function POST(req: Request) {
         } catch (e: any) {
           const errorMessage = e.message || String(e);
           console.error("Webhook Error:", e);
-          const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
+          const dashboardUrl = `https://sugarmeow.vercel.app/`;
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
@@ -342,7 +342,7 @@ export async function POST(req: Request) {
              // clean up draft
              await prisma.transactionDraft.delete({ where: { lineUserId: userId } });
 
-             const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
+             const dashboardUrl = `https://sugarmeow.vercel.app/`;
              await lineClient.replyMessage({
                replyToken: event.replyToken,
                messages: [

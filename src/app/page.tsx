@@ -3,6 +3,9 @@ import { format, addDays, addMonths, addYears, startOfDay, startOfMonth, startOf
 import { th } from 'date-fns/locale';
 import DashboardClient from '@/components/DashboardClient';
 import LandingPage from '@/components/LandingPage';
+import { getServerSession } from 'next-auth';
+import { authOptions } from './api/auth/[...nextauth]/route';
+import { redirect } from 'next/navigation';
 
 async function getStats(dateFilter: { gte: Date; lte?: Date }, userId?: string) {
   const userCondition = userId && userId !== 'all' ? { lineUserId: userId } : {};
@@ -36,12 +39,14 @@ async function getStats(dateFilter: { gte: Date; lte?: Date }, userId?: string) 
 }
 
 export default async function Page(props: { searchParams: Promise<{ period?: string; offset?: string; userId?: string }> }) {
-  const searchParams = await props.searchParams;
-  const userId = searchParams.userId;
-
-  if (!userId) {
-    return <LandingPage />;
+  const session = await getServerSession(authOptions);
+  
+  if (!session || !session.user) {
+    redirect('/login');
   }
+
+  const searchParams = await props.searchParams;
+  const userId = (session.user as any).id as string;
 
   const period = searchParams.period || 'daily';
   const offset = parseInt(searchParams.offset || '0');
