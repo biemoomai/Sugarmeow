@@ -157,42 +157,106 @@ export async function POST(req: Request) {
           continue;
         }
 
-        // Check if user requests report/dashboard
-        if (/^(รายงาน|แดชบอร์ด|dashboard|report|เมนู|สรุปยอด|เข้าเว็บ)$/i.test(text)) {
+        // Check if user requests report/dashboard/stats
+        if (/^(รายงาน|แดชบอร์ด|dashboard|report|เมนู|สรุปยอด|สรุป|เช็คยอด|ยอดวันนี้|สถานะ|stats|summary)$/i.test(text)) {
           const dashboardUrl = `https://sugarmeow.vercel.app/`;
+
+          // Calculate today's date range (ICT UTC+7)
+          const now = new Date();
+          const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+          const [sales, purchases, expenses] = await Promise.all([
+            prisma.sale.findMany({
+              where: { lineUserId: userId, createdAt: { gte: todayStart } }
+            }),
+            prisma.purchase.findMany({
+              where: { lineUserId: userId, createdAt: { gte: todayStart } }
+            }),
+            prisma.expense.findMany({
+              where: { lineUserId: userId, createdAt: { gte: todayStart } }
+            })
+          ]);
+
+          const totalSales = sales.reduce((acc, curr) => acc + curr.totalAmount, 0);
+          const totalPurchases = purchases.reduce((acc, curr) => acc + curr.totalAmount, 0);
+          const totalExpenses = expenses.reduce((acc, curr) => acc + curr.amount, 0);
+          const profit = totalSales - totalPurchases - totalExpenses;
+
+          const fmt = (num: number) => new Intl.NumberFormat('th-TH').format(num);
+
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
               {
                 type: 'flex',
-                altText: 'แดชบอร์ดชูก้าร์แมวมึน',
+                altText: '📊 สรุปยอดวันนี้ - ชูก้าร์แมวมึน',
                 contents: {
                   type: 'bubble',
-                  body: {
+                  header: {
                     type: 'box',
                     layout: 'vertical',
+                    backgroundColor: '#0F172A',
                     contents: [
                       {
                         type: 'text',
-                        text: '📊 แดชบอร์ด (จะดูไหม?)',
+                        text: '📊 สรุปยอดประจำวันนี้',
                         weight: 'bold',
-                        size: 'md',
-                        color: '#334155'
+                        color: '#F8FAFC',
+                        size: 'md'
                       },
                       {
                         type: 'text',
-                        text: 'เอ้า กดเข้าไปดูสิ รออะไรอยู่ หน้าเว็บส่วนตัวน่ะ',
-                        size: 'sm',
-                        color: '#64748B',
-                        wrap: true,
-                        margin: 'md'
+                        text: `${now.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' })}`,
+                        size: 'xs',
+                        color: '#94A3B8',
+                        margin: 'xs'
+                      }
+                    ]
+                  },
+                  body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    spacing: 'sm',
+                    contents: [
+                      {
+                        type: 'box',
+                        layout: 'horizontal',
+                        contents: [
+                          { type: 'text', text: '💵 ยอดขาย:', size: 'sm', color: '#64748B', flex: 1 },
+                          { type: 'text', text: `฿${fmt(totalSales)}`, size: 'sm', weight: 'bold', color: '#0EA5E9', align: 'end' }
+                        ]
+                      },
+                      {
+                        type: 'box',
+                        layout: 'horizontal',
+                        contents: [
+                          { type: 'text', text: '📦 ซื้อเข้า:', size: 'sm', color: '#64748B', flex: 1 },
+                          { type: 'text', text: `฿${fmt(totalPurchases)}`, size: 'sm', weight: 'bold', color: '#F59E0B', align: 'end' }
+                        ]
+                      },
+                      {
+                        type: 'box',
+                        layout: 'horizontal',
+                        contents: [
+                          { type: 'text', text: '💸 ค่าใช้จ่าย:', size: 'sm', color: '#64748B', flex: 1 },
+                          { type: 'text', text: `฿${fmt(totalExpenses)}`, size: 'sm', weight: 'bold', color: '#FB7185', align: 'end' }
+                        ]
+                      },
+                      { type: 'separator', margin: 'md' },
+                      {
+                        type: 'box',
+                        layout: 'horizontal',
+                        margin: 'md',
+                        contents: [
+                          { type: 'text', text: '💰 กำไรสุทธิ:', size: 'md', weight: 'bold', color: '#334155', flex: 1 },
+                          { type: 'text', text: `฿${fmt(profit)}`, size: 'md', weight: 'bold', color: profit >= 0 ? '#10B981' : '#EF4444', align: 'end' }
+                        ]
                       }
                     ]
                   },
                   footer: {
                     type: 'box',
                     layout: 'vertical',
-                    spacing: 'sm',
                     contents: [
                       {
                         type: 'button',
@@ -201,7 +265,7 @@ export async function POST(req: Request) {
                         height: 'sm',
                         action: {
                           type: 'uri',
-                          label: 'จิ้มเข้าเว็บสิ',
+                          label: '📲 เปิดดูแดชบอร์ดเต็มรูปแบบ',
                           uri: dashboardUrl
                         }
                       }
