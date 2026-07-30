@@ -192,8 +192,6 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
             </div>
           </div>
 
-          </div>
-
         </motion.div>
         )}
       </div>

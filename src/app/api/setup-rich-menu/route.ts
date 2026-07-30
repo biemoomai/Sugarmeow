@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Client } from '@line/bot-sdk';
+
 
 export async function GET() {
   const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
@@ -13,37 +13,57 @@ export async function GET() {
 
   try {
     // 1. Create rich menu
-    const richMenuId = await client.createRichMenu({
-      size: { width: 1200, height: 810 },
-      selected: true,
-      name: 'Dashboard Menu',
-      chatBarText: 'เปิดเมนู',
-      areas: [
-        {
-          bounds: { x: 0, y: 0, width: 1200, height: 810 },
-          action: {
-            type: 'uri',
-            uri: 'https://sugarmeow.vercel.app'
+    const createRes = await fetch('https://api.line.me/v2/bot/richmenu', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        size: { width: 1200, height: 810 },
+        selected: true,
+        name: 'Dashboard Menu',
+        chatBarText: 'เปิดเมนู',
+        areas: [
+          {
+            bounds: { x: 0, y: 0, width: 1200, height: 810 },
+            action: { type: 'uri', uri: 'https://sugarmeow.vercel.app' }
           }
-        }
-      ]
+        ]
+      })
     });
+    
+    if (!createRes.ok) throw new Error(`Create failed: ${await createRes.text()}`);
+    const { richMenuId } = await createRes.json();
 
-    // 2. Fetch image from our own public directory via URL
+    // 2. Fetch image
     const imageUrl = 'https://sugarmeow.vercel.app/richmenu.jpg';
     const imageResponse = await fetch(imageUrl);
     const arrayBuffer = await imageResponse.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
     // 3. Upload image
-    await client.setRichMenuImage(richMenuId, buffer);
+    const uploadRes = await fetch(`https://api-data.line.me/v2/bot/richmenu/${richMenuId}/content`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'image/jpeg'
+      },
+      body: arrayBuffer
+    });
+    if (!uploadRes.ok) throw new Error(`Upload failed: ${await uploadRes.text()}`);
 
     // 4. Set as default
-    await client.setDefaultRichMenu(richMenuId);
+    const defaultRes = await fetch(`https://api.line.me/v2/bot/user/all/richmenu/${richMenuId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    if (!defaultRes.ok) throw new Error(`Set default failed: ${await defaultRes.text()}`);
 
     return NextResponse.json({ success: true, richMenuId });
   } catch (error: any) {
-    console.error('Rich menu setup error:', error.originalError?.response?.data || error);
+    console.error('Rich menu setup error:', error);
     return NextResponse.json({ error: String(error) }, { status: 500 });
   }
 }
