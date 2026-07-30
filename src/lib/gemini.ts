@@ -11,6 +11,8 @@ const geminiModel = genAI.getGenerativeModel({
 const groqApiKey = process.env.GROQ_API_KEY || '';
 const groq = new Groq({ apiKey: groqApiKey });
 
+const cerebrasApiKey = process.env.CEREBRAS_API_KEY || '';
+
 export type ExtractedTransaction = {
   intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE';
   replyMessage?: string;
@@ -92,5 +94,34 @@ NEW TEXT: "${text}"
     }
   }
 
-  throw new Error("All AI providers (Gemini, Groq) failed or no API keys are configured.");
+  // Tier 3: Try Cerebras (Llama 3 70B)
+  if (cerebrasApiKey) {
+    try {
+      console.log("Attempting AI extraction with Cerebras (Llama 3)...");
+      const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${cerebrasApiKey}`
+        },
+        body: JSON.stringify({
+          model: "llama3.1-70b",
+          messages: [{ role: "user", content: prompt }],
+          response_format: { type: "json_object" }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Cerebras API error: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const cleaned = (data.choices?.[0]?.message?.content || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleaned) as ExtractedTransaction;
+    } catch (error: any) {
+      console.warn("Cerebras AI failed...", error.message || error);
+    }
+  }
+
+  throw new Error("All AI providers (Gemini, Groq, Cerebras) failed or no API keys are configured.");
 }
