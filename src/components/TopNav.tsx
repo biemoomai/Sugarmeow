@@ -11,6 +11,8 @@ export default function TopNav() {
   const searchParams = useSearchParams();
   const period = searchParams.get('period') || 'daily';
 
+  if (pathname === '/login') return null;
+
   const tabs = [
     { id: 'daily', label: 'วันนี้' },
     { id: 'weekly', label: 'สัปดาห์นี้' },

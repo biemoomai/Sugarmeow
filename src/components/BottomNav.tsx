@@ -8,13 +8,12 @@ import { motion } from 'framer-motion';
 export default function BottomNav() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const userId = searchParams.get('userId');
-
-  if (!userId) return null;
+  
+  if (pathname === '/login') return null;
 
   const navItems = [
-    { name: 'หน้าหลัก', href: `/?userId=${userId}`, activePath: '/', icon: Home },
-    { name: 'รายการ', href: `/transactions?userId=${userId}`, activePath: '/transactions', icon: List },
+    { name: 'หน้าหลัก', href: `/`, activePath: '/', icon: Home },
+    { name: 'รายการ', href: `/transactions`, activePath: '/transactions', icon: List },
   ];
 
   return (
