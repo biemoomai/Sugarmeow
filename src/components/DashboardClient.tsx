@@ -2,8 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, ShoppingCart, Wallet, CreditCard, Activity, ChevronLeft, ChevronRight, BarChart2, Cat } from 'lucide-react';
+import { TrendingUp, ShoppingCart, Wallet, CreditCard, Activity, ChevronLeft, ChevronRight, BarChart2, Cat, Loader2 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from 'recharts';
+import { useTransition } from 'react';
 
 type Stats = {
   sales: number;
@@ -14,13 +15,16 @@ type Stats = {
 
 export default function DashboardClient({ data, dateStr, period, offset }: { data: Stats; dateStr: string; period: string; offset: number }) {
   const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   
   const formatMoney = (amount: number) => {
     return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(amount);
   };
 
   const handleOffsetChange = (newOffset: number) => {
-    router.push(`/?period=${period}&offset=${newOffset}`);
+    startTransition(() => {
+      router.push(`/?period=${period}&offset=${newOffset}`);
+    });
   };
 
   const handleNavigateToTransactions = (type: string) => {
@@ -29,11 +33,13 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
     if (type === 'ซื้อเข้า' || type === 'purchases') typeParam = 'purchases';
     if (type === 'รายจ่าย' || type === 'expenses') typeParam = 'expenses';
     
-    if (typeParam) {
-      router.push(`/transactions?period=${period}&offset=${offset}&type=${typeParam}`);
-    } else {
-      router.push(`/transactions?period=${period}&offset=${offset}`);
-    }
+    startTransition(() => {
+      if (typeParam) {
+        router.push(`/transactions?period=${period}&offset=${offset}&type=${typeParam}`);
+      } else {
+        router.push(`/transactions?period=${period}&offset=${offset}`);
+      }
+    });
   };
 
   const chartData = [
@@ -49,13 +55,16 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
       <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full blur-3xl pointer-events-none mix-blend-multiply" />
       <div className="absolute top-[20%] right-[-10%] w-[30%] h-[40%] bg-emerald-400/20 rounded-full blur-3xl pointer-events-none mix-blend-multiply" />
 
-      <div className="max-w-md mx-auto px-4 pt-4 pb-6 relative z-10">
+      <div className={`max-w-md mx-auto px-4 pt-4 pb-6 relative z-10 ${isPending ? 'opacity-60 pointer-events-none' : ''} transition-opacity duration-300`}>
         <header className="mb-4">
           <div className="flex items-center justify-between bg-white/50 backdrop-blur-sm rounded-xl p-1.5 shadow-sm border border-slate-200 w-full">
             <button onClick={() => handleOffsetChange(offset - 1)} className="p-2 hover:bg-white rounded-lg text-slate-500 transition-colors shadow-sm active:scale-95">
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <p className="text-sm font-bold text-indigo-700 text-center flex-1">{dateStr}</p>
+            <div className="flex items-center justify-center gap-2 flex-1">
+              {isPending && <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />}
+              <p className="text-sm font-bold text-indigo-700 text-center">{dateStr}</p>
+            </div>
             <button onClick={() => handleOffsetChange(offset + 1)} className="p-2 hover:bg-white rounded-lg text-slate-500 transition-colors shadow-sm active:scale-95" disabled={offset === 0}>
               <ChevronRight className={`w-5 h-5 ${offset === 0 ? 'opacity-30' : ''}`} />
             </button>
