@@ -108,6 +108,39 @@ export async function POST(req: Request) {
             continue;
           }
 
+          if (data.intent === 'UNDO') {
+            // Find the most recent transaction across Sale, Purchase, Expense
+            const [lastSale, lastPurchase, lastExpense] = await Promise.all([
+              prisma.sale.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' } }),
+              prisma.purchase.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' } }),
+              prisma.expense.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' } })
+            ]);
+
+            // Find the absolute latest
+            const latest = [
+              { type: 'SALE', record: lastSale },
+              { type: 'PURCHASE', record: lastPurchase },
+              { type: 'EXPENSE', record: lastExpense }
+            ].filter(item => item.record !== null).sort((a, b) => b.record!.createdAt.getTime() - a.record!.createdAt.getTime())[0];
+
+            if (!latest) {
+              await lineClient.replyMessage({
+                replyToken: event.replyToken,
+                messages: [{ type: 'text', text: 'จะให้ลบอะไรวะ ยังไม่เคยบันทึกอะไรเลยสักอย่าง!' }]
+              });
+            } else {
+              if (latest.type === 'SALE') await prisma.sale.delete({ where: { id: latest.record!.id } });
+              else if (latest.type === 'PURCHASE') await prisma.purchase.delete({ where: { id: latest.record!.id } });
+              else if (latest.type === 'EXPENSE') await prisma.expense.delete({ where: { id: latest.record!.id } });
+
+              await lineClient.replyMessage({
+                replyToken: event.replyToken,
+                messages: [{ type: 'text', text: 'เออ ลบรายการล่าสุดทิ้งให้ละ มือลั่นล่ะสิทีหลังก็ดูดีๆ' }]
+              });
+            }
+            continue;
+          }
+
           let summaryText = '';
           if (data.intent === 'SALE') {
              summaryText = `ขายให้: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ (ไปทวงด้วยนะ)'}`;

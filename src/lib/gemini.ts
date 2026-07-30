@@ -4,7 +4,7 @@ const apiKey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export type ExtractedTransaction = {
-  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN';
+  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO';
   name: string;
   product: string;
   quantity: number;
@@ -30,6 +30,7 @@ IMPORTANT RULES:
 2. If the user does not specify if they are buying or selling AND it is ambiguous (e.g., "มะละกอป้านัท 50 โล โลละ 50"), set intent to "UNKNOWN".
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
 4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
+5. If the user explicitly asks to cancel, delete, or undo the previous/latest transaction (e.g., "ลบอันเมื่อกี้", "ยกเลิกป้าส้ม", "ล้างออกไป"), set intent to "UNDO".
 
 CONVERSATIONAL CONTEXT:
 The user might be correcting a PREVIOUS transaction (e.g., they just said "ซื้อมะละกอ 10 โล" and now they say "จ่ายแล้ว" or "เปลี่ยนเป็น 20 โล").
@@ -40,7 +41,7 @@ If PREVIOUS_TRANSACTION is provided:
 
 Expected JSON Structure:
 {
-  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN",
+  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO",
   "name": "string", // Customer name for SALE, Supplier name for PURCHASE. Empty for EXPENSE.
   "product": "string", // Product name. Empty for EXPENSE.
   "quantity": number, // Amount in kg. 0 for EXPENSE.
