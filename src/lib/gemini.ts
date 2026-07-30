@@ -78,13 +78,13 @@ NEW TEXT: "${text}"
     }
   }
 
-  // Tier 2: Try Groq (Llama 3)
+  // Tier 2: Try Groq (Llama 3.3)
   if (groqApiKey) {
     try {
-      console.log("Attempting AI extraction with Groq (Llama 3)...");
+      console.log("Attempting AI extraction with Groq (Llama 3.3)...");
       const chatCompletion = await groq.chat.completions.create({
         messages: [{ role: 'user', content: prompt }],
-        model: 'llama3-70b-8192',
+        model: 'llama-3.3-70b-versatile',
         response_format: { type: 'json_object' },
       });
       const cleaned = (chatCompletion.choices[0]?.message?.content || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
@@ -94,10 +94,10 @@ NEW TEXT: "${text}"
     }
   }
 
-  // Tier 3: Try Cerebras (Llama 3 70B)
+  // Tier 3: Try Cerebras (Llama 3.1)
   if (cerebrasApiKey) {
     try {
-      console.log("Attempting AI extraction with Cerebras (Llama 3)...");
+      console.log("Attempting AI extraction with Cerebras (Llama 3.1)...");
       const response = await fetch("https://api.cerebras.ai/v1/chat/completions", {
         method: "POST",
         headers: {
