@@ -37,6 +37,7 @@ model Purchase {
   quantityKg   Float
   unitPrice    Float
   totalAmount  Float
+  lineUserId   String?
   
   supplier     Supplier @relation(fields: [supplierId], references: [id])
   product      Product  @relation(fields: [productId], references: [id])
@@ -54,6 +55,7 @@ model Sale {
   totalAmount   Float
   paymentStatus String   @default("PAID") // "PAID", "PENDING"
   paymentDate   DateTime?
+  lineUserId    String?
   
   customer      Customer @relation(fields: [customerId], references: [id])
   product       Product  @relation(fields: [productId], references: [id])
@@ -67,6 +69,7 @@ model Expense {
   category    String
   amount      Float
   description String?
+  lineUserId  String?
   createdAt   DateTime @default(now())
 }
 

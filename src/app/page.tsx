@@ -3,20 +3,22 @@ import { format, addDays, addMonths, addYears, startOfDay, startOfMonth, startOf
 import { th } from 'date-fns/locale';
 import DashboardClient from '@/components/DashboardClient';
 
-async function getStats(dateFilter: { gte: Date; lte?: Date }) {
+async function getStats(dateFilter: { gte: Date; lte?: Date }, userId?: string) {
+  const userCondition = userId && userId !== 'all' ? { lineUserId: userId } : {};
+
   const purchases = await prisma.purchase.aggregate({
     _sum: { totalAmount: true },
-    where: { date: dateFilter }
+    where: { date: dateFilter, ...userCondition }
   });
 
   const sales = await prisma.sale.aggregate({
     _sum: { totalAmount: true },
-    where: { date: dateFilter }
+    where: { date: dateFilter, ...userCondition }
   });
 
   const expenses = await prisma.expense.aggregate({
     _sum: { amount: true },
-    where: { date: dateFilter }
+    where: { date: dateFilter, ...userCondition }
   });
 
   const salesTotal = sales._sum.totalAmount || 0;
@@ -32,10 +34,11 @@ async function getStats(dateFilter: { gte: Date; lte?: Date }) {
   };
 }
 
-export default async function Page(props: { searchParams: Promise<{ period?: string; offset?: string }> }) {
+export default async function Page(props: { searchParams: Promise<{ period?: string; offset?: string; userId?: string }> }) {
   const searchParams = await props.searchParams;
   const period = searchParams.period || 'daily';
   const offset = parseInt(searchParams.offset || '0');
+  const userId = searchParams.userId;
   
   const now = new Date();
   let targetDate = now;
@@ -61,8 +64,7 @@ export default async function Page(props: { searchParams: Promise<{ period?: str
     dateStr = format(targetDate, 'd MMM yyyy', { locale: th });
   }
 
-  // Adjust getStats to use strict lte boundary to not bleed into next period
-  const stats = await getStats(dateFilter);
+  const stats = await getStats(dateFilter, userId);
 
   return <DashboardClient data={stats} dateStr={dateStr} period={period} offset={offset} />;
 }

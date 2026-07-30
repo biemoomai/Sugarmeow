@@ -3,12 +3,15 @@ import { format, addDays, addMonths, addYears, startOfDay, startOfMonth, startOf
 import { th } from 'date-fns/locale';
 import TransactionsClient from '@/components/TransactionsClient';
 
-export default async function TransactionsPage(props: { searchParams: Promise<{ period?: string; offset?: string; type?: string }> }) {
+export default async function TransactionsPage(props: { searchParams: Promise<{ period?: string; offset?: string; type?: string; userId?: string }> }) {
   const searchParams = await props.searchParams;
   const period = searchParams.period || 'daily';
   const offset = parseInt(searchParams.offset || '0');
   const typeFilter = searchParams.type || 'all';
-  
+  const userId = searchParams.userId;
+
+  const userCondition = userId && userId !== 'all' ? { lineUserId: userId } : {};
+
   const now = new Date();
   let targetDate = now;
   let dateFilter;
@@ -35,21 +38,21 @@ export default async function TransactionsPage(props: { searchParams: Promise<{ 
 
   // Fetch transactions based on filter
   const rawSales = (typeFilter === 'all' || typeFilter === 'sales') ? await prisma.sale.findMany({
-    where: { date: dateFilter },
+    where: { date: dateFilter, ...userCondition },
     include: { customer: true, product: true },
     orderBy: { date: 'desc' },
     take: 100
   }) : [];
   
   const rawPurchases = (typeFilter === 'all' || typeFilter === 'purchases') ? await prisma.purchase.findMany({
-    where: { date: dateFilter },
+    where: { date: dateFilter, ...userCondition },
     include: { supplier: true, product: true },
     orderBy: { date: 'desc' },
     take: 100
   }) : [];
 
   const rawExpenses = (typeFilter === 'all' || typeFilter === 'expenses') ? await prisma.expense.findMany({
-    where: { date: dateFilter },
+    where: { date: dateFilter, ...userCondition },
     orderBy: { date: 'desc' },
     take: 100
   }) : [];

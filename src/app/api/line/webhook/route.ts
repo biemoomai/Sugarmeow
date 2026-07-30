@@ -17,7 +17,22 @@ export async function POST(req: Request) {
       if (!userId) continue;
 
       if (event.type === 'message' && event.message.type === 'text') {
-        const text = event.message.text;
+        const text = event.message.text.trim();
+
+        // Check if user requests report/dashboard
+        if (/^(รายงาน|แดชบอร์ด|dashboard|report|เมนู|สรุปยอด)$/i.test(text)) {
+          const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
+          await lineClient.replyMessage({
+            replyToken: event.replyToken,
+            messages: [
+              {
+                type: 'text',
+                text: `📊 กดดูสรุปยอดและรายงานบัญชีของคุณชูก้าร์แมวมึนได้ที่ลิงก์นี้เลยครับ:\n${dashboardUrl}`
+              }
+            ]
+          });
+          continue;
+        }
 
         try {
           const data = await extractTransaction(text);
@@ -127,7 +142,7 @@ export async function POST(req: Request) {
            const payload = JSON.parse(draft.payload);
            
            try {
-             // UPSERT LOGIC
+             // UPSERT LOGIC WITH lineUserId
              if (payload.intent === 'SALE') {
                 let customer = await prisma.customer.findFirst({ where: { name: payload.name } });
                 if (!customer) customer = await prisma.customer.create({ data: { name: payload.name } });
@@ -144,6 +159,7 @@ export async function POST(req: Request) {
                     totalAmount: payload.totalAmount,
                     paymentStatus: payload.status,
                     paymentDate: payload.status === 'PAID' ? new Date() : null,
+                    lineUserId: userId,
                   }
                 });
              } else if (payload.intent === 'PURCHASE') {
@@ -160,6 +176,7 @@ export async function POST(req: Request) {
                     quantityKg: payload.quantity,
                     unitPrice: payload.unitPrice,
                     totalAmount: payload.totalAmount,
+                    lineUserId: userId,
                   }
                 });
              } else if (payload.intent === 'EXPENSE') {
@@ -168,6 +185,7 @@ export async function POST(req: Request) {
                     category: payload.expenseCategory || 'ทั่วไป',
                     amount: payload.totalAmount,
                     description: payload.expenseDescription || '',
+                    lineUserId: userId,
                   }
                 });
              }
