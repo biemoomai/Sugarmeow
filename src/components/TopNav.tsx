@@ -4,8 +4,9 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { LogOut } from 'lucide-react';
 import { signOut } from 'next-auth/react';
-import { useTransition } from 'react';
+import { useTransition, useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 
 export default function TopNav() {
   const router = useRouter();
@@ -23,8 +24,17 @@ export default function TopNav() {
   ];
 
   const [isPending, startTransition] = useTransition();
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isPending) {
+      setPendingTab(null);
+    }
+  }, [isPending]);
 
   const handleTabClick = (id: string) => {
+    if (period === id) return;
+    setPendingTab(id);
     const params = new URLSearchParams(searchParams);
     params.set('period', id);
     params.delete('offset'); // Reset offset when changing period
@@ -68,6 +78,27 @@ export default function TopNav() {
       >
         <LogOut className="w-5 h-5" />
       </button>
+
+      {/* Full Screen Loading Overlay */}
+      <AnimatePresence>
+        {isPending && pendingTab && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#F8FAFC]/70 backdrop-blur-md"
+            style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0 }}
+          >
+            <div className="relative mb-6">
+              <div className="w-16 h-16 border-4 border-indigo-100 rounded-full"></div>
+              <div className="w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin absolute top-0 left-0"></div>
+            </div>
+            <p className="text-slate-600 font-medium text-lg">
+              กำลังโหลดข้อมูลของ <span className="text-indigo-600 font-bold">{tabs.find(t => t.id === pendingTab)?.label}</span>...
+            </p>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
