@@ -100,10 +100,18 @@ export async function POST(req: Request) {
             create: { lineUserId: userId, payload: JSON.stringify(data) }
           });
 
+          if (data.intent === 'INCOMPLETE' && data.replyMessage) {
+            await lineClient.replyMessage({
+              replyToken: event.replyToken,
+              messages: [{ type: 'text', text: data.replyMessage }]
+            });
+            continue;
+          }
+
           if (data.intent === 'UNKNOWN') {
             await lineClient.replyMessage({
               replyToken: event.replyToken,
-              messages: [{ type: 'text', text: 'เห้ย ลืมบอกป่าวว่าอันนี้ "ซื้อ" หรือ "ขาย"? พิมพ์มาให้ครบๆ ดิ๊ มึนละเนี่ย' }]
+              messages: [{ type: 'text', text: 'พิมพ์อะไรมาเนี่ย งงไปหมดละ พิมพ์มาให้ครบๆ ดิ๊ มึนละเนี่ย' }]
             });
             continue;
           }

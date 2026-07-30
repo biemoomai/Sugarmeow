@@ -4,7 +4,8 @@ const apiKey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export type ExtractedTransaction = {
-  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO';
+  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE';
+  replyMessage?: string;
   name: string;
   product: string;
   quantity: number;
@@ -27,21 +28,23 @@ The owner will send messages like: "ซื้อกล้วย 500 โล โ�
 
 IMPORTANT RULES:
 1. ALWAYS output valid JSON ONLY.
-2. If the user does not specify if they are buying or selling AND it is ambiguous (e.g., "มะละกอป้านัท 50 โล โลละ 50"), set intent to "UNKNOWN".
+2. If critical information is missing (e.g. you don't know if it's a purchase or sale, or missing quantity/price for a product), set intent to "INCOMPLETE" and write a natural Thai response in "replyMessage" asking the user for the specific missing info. Example: "ตกลงอันนี้ซื้อเข้ามาหรือขายออกไปครับ?" or "มะละกอนี่กี่โล โลละเท่าไหร่นะครับ?"
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
 4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
-5. If the user explicitly asks to cancel, delete, or undo the previous/latest transaction (e.g., "ลบอันเมื่อกี้", "ยกเลิกป้าส้ม", "ล้างออกไป"), set intent to "UNDO".
+5. If the user explicitly asks to cancel, delete, or undo the previous/latest transaction, set intent to "UNDO".
+6. If the message is complete nonsense and cannot be understood at all, set intent to "UNKNOWN".
 
 CONVERSATIONAL CONTEXT:
-The user might be correcting a PREVIOUS transaction (e.g., they just said "ซื้อมะละกอ 10 โล" and now they say "จ่ายแล้ว" or "เปลี่ยนเป็น 20 โล").
+The user might be correcting a PREVIOUS transaction or answering your question from a previous INCOMPLETE state.
 If PREVIOUS_TRANSACTION is provided:
-- Determine if the NEW TEXT is a correction/addition to the PREVIOUS_TRANSACTION. 
-- If YES, merge the new info into the previous data and output the UPDATED JSON. (If it's just "จ่ายแล้ว", change status to "PAID" and keep the rest the same).
+- Determine if the NEW TEXT is answering a question or correcting the PREVIOUS_TRANSACTION. 
+- If YES, merge the new info into the previous data to complete the missing fields. (For example, if previous was missing "intent" and new text says "ซื้อ", merge them and set intent to "PURCHASE").
 - If the NEW TEXT is a completely unrelated transaction (e.g., previous was buying apples, new text is "จ่ายค่าไฟ"), IGNORE the previous transaction and extract the new one.
 
 Expected JSON Structure:
 {
-  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO",
+  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO" | "INCOMPLETE",
+  "replyMessage": "string", // Only populate this if intent is "INCOMPLETE". Ask the user for the missing details in natural Thai.
   "name": "string", // Customer name for SALE, Supplier name for PURCHASE. Empty for EXPENSE.
   "product": "string", // Product name. Empty for EXPENSE.
   "quantity": number, // Amount in kg. 0 for EXPENSE.
