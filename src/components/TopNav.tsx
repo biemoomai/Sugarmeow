@@ -7,7 +7,10 @@ export default function TopNav() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const userId = searchParams.get('userId');
   const period = searchParams.get('period') || 'daily';
+
+  if (!userId) return null;
 
   const tabs = [
     { id: 'daily', label: 'วันนี้' },

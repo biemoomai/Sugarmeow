@@ -19,15 +19,65 @@ export async function POST(req: Request) {
       if (event.type === 'message' && event.message.type === 'text') {
         const text = event.message.text.trim();
 
+        // Show loading animation for 5 seconds
+        try {
+          await lineClient.showLoadingAnimation({ chatId: userId, loadingSeconds: 5 });
+        } catch (e) {
+          console.error("Failed to show loading animation:", e);
+        }
+
         // Check if user requests report/dashboard
-        if (/^(รายงาน|แดชบอร์ด|dashboard|report|เมนู|สรุปยอด)$/i.test(text)) {
+        // Check if user requests report/dashboard
+        if (/^(รายงาน|แดชบอร์ด|dashboard|report|เมนู|สรุปยอด|เข้าเว็บ)$/i.test(text)) {
           const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
               {
-                type: 'text',
-                text: `📊 กดดูสรุปยอดและรายงานบัญชีของคุณชูก้าร์แมวมึนได้ที่ลิงก์นี้เลยครับ:\n${dashboardUrl}`
+                type: 'flex',
+                altText: 'แดชบอร์ดชูก้าร์แมวมึน',
+                contents: {
+                  type: 'bubble',
+                  body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: '📊 แดชบอร์ด (จะดูไหม?)',
+                        weight: 'bold',
+                        size: 'md',
+                        color: '#334155'
+                      },
+                      {
+                        type: 'text',
+                        text: 'เอ้า กดเข้าไปดูสิ รออะไรอยู่ หน้าเว็บส่วนตัวน่ะ',
+                        size: 'sm',
+                        color: '#64748B',
+                        wrap: true,
+                        margin: 'md'
+                      }
+                    ]
+                  },
+                  footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    spacing: 'sm',
+                    contents: [
+                      {
+                        type: 'button',
+                        style: 'primary',
+                        color: '#475569',
+                        height: 'sm',
+                        action: {
+                          type: 'uri',
+                          label: 'จิ้มเข้าเว็บสิ',
+                          uri: dashboardUrl
+                        }
+                      }
+                    ]
+                  }
+                }
               }
             ]
           });
@@ -46,14 +96,14 @@ export async function POST(req: Request) {
 
           let summaryText = '';
           if (data.intent === 'SALE') {
-             summaryText = `ขายสินค้าให้: ${data.name}\nสินค้า: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ'}`;
+             summaryText = `ขายให้: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ (ไปทวงด้วยนะ)'}`;
           } else if (data.intent === 'PURCHASE') {
-             summaryText = `ซื้อสินค้าจาก: ${data.name}\nสินค้า: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ'}`;
+             summaryText = `ซื้อจาก: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ติดหนี้เขาอยู่'}`;
           } else {
-             summaryText = `หมวดหมู่: ${data.expenseCategory || 'ทั่วไป'}\nรายละเอียด: ${data.expenseDescription || '-'}\nยอดรวม: ${data.totalAmount} ฿`;
+             summaryText = `หมวด: ${data.expenseCategory || 'ทั่วไป'}\nรายละเอียด: ${data.expenseDescription || '-'}\nยอด: ${data.totalAmount} ฿`;
           }
 
-          const intentLabel = data.intent === 'SALE' ? 'รายการขาย' : data.intent === 'PURCHASE' ? 'รายการซื้อเข้า' : 'รายการค่าใช้จ่าย';
+          const intentLabel = data.intent === 'SALE' ? '💵 รับเงิน' : data.intent === 'PURCHASE' ? '💸 จ่ายเงินซื้อของ' : '🔥 เสียเงินอีกแล้ว';
 
           // Send Flex Message
           await lineClient.replyMessage({
@@ -61,7 +111,7 @@ export async function POST(req: Request) {
             messages: [
               {
                 type: 'flex',
-                altText: 'กรุณายืนยันการทำรายการ',
+                altText: 'ตรวจสอบรายการด้วย',
                 contents: {
                   type: 'bubble',
                   body: {
@@ -72,7 +122,7 @@ export async function POST(req: Request) {
                         type: 'text',
                         text: intentLabel,
                         weight: 'bold',
-                        color: '#1DB446',
+                        color: data.intent === 'SALE' ? '#1DB446' : '#EF4444',
                         size: 'sm'
                       },
                       {
@@ -92,10 +142,11 @@ export async function POST(req: Request) {
                       {
                         type: 'button',
                         style: 'primary',
+                        color: '#475569',
                         height: 'sm',
                         action: {
                           type: 'postback',
-                          label: 'ยืนยัน',
+                          label: 'เออ บันทึกเลย',
                           data: 'action=confirm'
                         }
                       },
@@ -105,7 +156,7 @@ export async function POST(req: Request) {
                         height: 'sm',
                         action: {
                           type: 'postback',
-                          label: 'ยกเลิก',
+                          label: 'ไม่เอา พิมพ์ผิด',
                           data: 'action=cancel'
                         }
                       }
@@ -116,9 +167,50 @@ export async function POST(req: Request) {
             ]
           });
         } catch (e) {
+          const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
           await lineClient.replyMessage({
             replyToken: event.replyToken,
-            messages: [{ type: 'text', text: '❌ ขออภัย AI ไม่สามารถทำความเข้าใจข้อความได้ กรุณาลองพิมพ์ใหม่อีกครั้งครับ (เช่น "ขายกล้วยให้เจ๊ศรี 100 โล โลละ 15 บาท")' }]
+            messages: [
+              { type: 'text', text: 'พิมพ์อะไรมาวะเนี่ย อ่านไม่รู้เรื่อง เอาใหม่ดิ๊' },
+              {
+                type: 'flex',
+                altText: 'ทางลัดเข้าเว็บ',
+                contents: {
+                  type: 'bubble',
+                  body: {
+                    type: 'box',
+                    layout: 'vertical',
+                    contents: [
+                      {
+                        type: 'text',
+                        text: 'หรือถ้าขี้เกียจพิมพ์ จะดูรายงานก็กดปุ่มเอา',
+                        size: 'sm',
+                        color: '#64748B',
+                        wrap: true
+                      }
+                    ]
+                  },
+                  footer: {
+                    type: 'box',
+                    layout: 'vertical',
+                    spacing: 'sm',
+                    contents: [
+                      {
+                        type: 'button',
+                        style: 'primary',
+                        color: '#475569',
+                        height: 'sm',
+                        action: {
+                          type: 'uri',
+                          label: 'ไปดูแดชบอร์ด',
+                          uri: dashboardUrl
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
           });
         }
       } else if (event.type === 'postback') {
@@ -127,14 +219,14 @@ export async function POST(req: Request) {
            await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
            await lineClient.replyMessage({
              replyToken: event.replyToken,
-             messages: [{ type: 'text', text: 'ยกเลิกรายการเรียบร้อยครับ ❌' }]
+             messages: [{ type: 'text', text: 'เออ ยกเลิกให้ละ พิมพ์ใหม่ดีๆ ล่ะ' }]
            });
         } else if (data === 'action=confirm') {
            const draft = await prisma.transactionDraft.findUnique({ where: { lineUserId: userId } });
            if (!draft) {
              await lineClient.replyMessage({
                replyToken: event.replyToken,
-               messages: [{ type: 'text', text: '⚠️ ไม่พบรายการที่รอยืนยัน หรือรายการนี้ถูกบันทึกไปแล้วครับ' }]
+               messages: [{ type: 'text', text: 'หาไม่เจอ หรือกดซ้ำไปแล้วมั้ง ช่างเถอะ' }]
              });
              continue;
            }
@@ -193,9 +285,50 @@ export async function POST(req: Request) {
              // clean up draft
              await prisma.transactionDraft.delete({ where: { lineUserId: userId } });
 
+             const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
              await lineClient.replyMessage({
                replyToken: event.replyToken,
-               messages: [{ type: 'text', text: '✅ บันทึกรายการลงระบบเรียบร้อยแล้วครับ!' }]
+               messages: [
+                 { type: 'text', text: 'เออ บันทึกลงระบบให้ละ จะไปทำอะไรก็ไป' },
+                 {
+                   type: 'flex',
+                   altText: 'เปิดแดชบอร์ดซะ',
+                   contents: {
+                     type: 'bubble',
+                     body: {
+                       type: 'box',
+                       layout: 'vertical',
+                       contents: [
+                         {
+                           type: 'text',
+                           text: 'อุตส่าห์ทำปุ่มมาให้ละ กดเข้าไปดูยอดซะนะ 👇',
+                           size: 'sm',
+                           color: '#64748B',
+                           wrap: true
+                         }
+                       ]
+                     },
+                     footer: {
+                       type: 'box',
+                       layout: 'vertical',
+                       spacing: 'sm',
+                       contents: [
+                         {
+                           type: 'button',
+                           style: 'primary',
+                           color: '#475569',
+                           height: 'sm',
+                           action: {
+                             type: 'uri',
+                             label: 'ไปดูแดชบอร์ด',
+                             uri: dashboardUrl
+                           }
+                         }
+                       ]
+                     }
+                   }
+                 }
+               ]
              });
            } catch (dbError) {
              console.error(dbError);

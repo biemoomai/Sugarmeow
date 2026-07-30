@@ -2,13 +2,19 @@ import { prisma } from '@/lib/prisma';
 import { format, addDays, addMonths, addYears, startOfDay, startOfMonth, startOfYear, startOfWeek, addWeeks } from 'date-fns';
 import { th } from 'date-fns/locale';
 import TransactionsClient from '@/components/TransactionsClient';
+import LandingPage from '@/components/LandingPage';
 
 export default async function TransactionsPage(props: { searchParams: Promise<{ period?: string; offset?: string; type?: string; userId?: string }> }) {
   const searchParams = await props.searchParams;
+  const userId = searchParams.userId;
+
+  if (!userId) {
+    return <LandingPage />;
+  }
+
   const period = searchParams.period || 'daily';
   const offset = parseInt(searchParams.offset || '0');
   const typeFilter = searchParams.type || 'all';
-  const userId = searchParams.userId;
 
   const userCondition = userId && userId !== 'all' ? { lineUserId: userId } : {};
 

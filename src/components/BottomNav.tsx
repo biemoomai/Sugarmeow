@@ -1,23 +1,27 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { Home, List } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get('userId');
+
+  if (!userId) return null;
 
   const navItems = [
-    { name: 'หน้าหลัก', href: '/', icon: Home },
-    { name: 'รายการ', href: '/transactions', icon: List },
+    { name: 'หน้าหลัก', href: `/?userId=${userId}`, activePath: '/', icon: Home },
+    { name: 'รายการ', href: `/transactions?userId=${userId}`, activePath: '/transactions', icon: List },
   ];
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-6 pt-2 pointer-events-none">
       <div className="max-w-md mx-auto bg-white/80 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-3xl p-2 flex justify-around items-center pointer-events-auto">
         {navItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.activePath;
           const Icon = item.icon;
 
           return (
