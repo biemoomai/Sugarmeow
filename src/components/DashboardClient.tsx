@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
-import { TrendingUp, ShoppingCart, Wallet, CreditCard, Activity, ChevronLeft, ChevronRight, BarChart2 } from 'lucide-react';
+import { TrendingUp, ShoppingCart, Wallet, CreditCard, Activity, ChevronLeft, ChevronRight, BarChart2, Cat } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from 'recharts';
 
 type Stats = {
@@ -62,6 +62,19 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
           </div>
         </header>
 
+        {data.sales === 0 && data.purchases === 0 && data.expenses === 0 && data.profit === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex flex-col items-center justify-center h-64 mt-10 bg-white/50 backdrop-blur-sm rounded-3xl border border-slate-100 shadow-sm"
+          >
+            <div className="bg-indigo-50 p-4 rounded-full mb-3">
+              <Cat className="w-12 h-12 text-indigo-300" />
+            </div>
+            <p className="font-bold text-slate-600">ยังไม่มีรายการในช่วงเวลานี้</p>
+            <p className="text-xs text-slate-400 mt-1">กดปุ่ม + ด้านล่างเพื่อเพิ่มรายการแรกได้เลย!</p>
+          </motion.div>
+        ) : (
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -179,7 +192,10 @@ export default function DashboardClient({ data, dateStr, period, offset }: { dat
             </div>
           </div>
 
+          </div>
+
         </motion.div>
+        )}
       </div>
     </div>
   );

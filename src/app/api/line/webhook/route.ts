@@ -222,13 +222,12 @@ export async function POST(req: Request) {
             ]
           });
         } catch (e: any) {
-          const errorMessage = e.message || String(e);
           console.error("Webhook Error:", e);
           const dashboardUrl = `https://sugarmeow.vercel.app/`;
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
-              { type: 'text', text: `พิมพ์อะไรมาวะเนี่ย อ่านไม่รู้เรื่อง เอาใหม่ดิ๊\n\n(แจ้งแอดมิน: ระบบพังเพราะ "${errorMessage}")` },
+              { type: 'text', text: `ขออภัยครับ ตอนนี้สมองผมเบลอ (ระบบขัดข้อง) รบกวนพิมพ์ใหม่อีกทีนะครับ` },
               {
                 type: 'flex',
                 altText: 'ทางลัดเข้าเว็บ',
@@ -273,11 +272,15 @@ export async function POST(req: Request) {
       } else if (event.type === 'postback') {
         const data = event.postback.data;
         if (data === 'action=cancel') {
-           await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
-           await lineClient.replyMessage({
-             replyToken: event.replyToken,
-             messages: [{ type: 'text', text: 'เออ ยกเลิกให้ละ พิมพ์ใหม่ดีๆ ล่ะ' }]
-           });
+           try {
+             await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
+             await lineClient.replyMessage({
+               replyToken: event.replyToken,
+               messages: [{ type: 'text', text: 'เออ ยกเลิกให้ละ พิมพ์ใหม่ดีๆ ล่ะ' }]
+             });
+           } catch (e) {
+             console.error("Cancel postback error:", e);
+           }
         } else if (data === 'action=confirm') {
            const draft = await prisma.transactionDraft.findUnique({ where: { lineUserId: userId } });
            if (!draft) {

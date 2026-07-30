@@ -32,7 +32,7 @@ IMPORTANT RULES:
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
 4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
 5. If the user explicitly asks to cancel, delete, or undo the previous/latest transaction, set intent to "UNDO".
-6. If the message is complete nonsense and cannot be understood at all, set intent to "UNKNOWN".
+6. If the message contains typos, try to handle them gracefully. If the message is complete nonsense, gibberish, or you cannot understand it at all, set intent to "INCOMPLETE" and write a polite confused message in "replyMessage" asking them to retype it clearly.
 
 CONVERSATIONAL CONTEXT:
 The user might be correcting a PREVIOUS transaction or answering your question from a previous INCOMPLETE state.

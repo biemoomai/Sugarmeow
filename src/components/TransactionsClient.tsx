@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2 } from 'lucide-react';
+import { Download, Table as TableIcon, ChevronLeft, ChevronRight, X, List, Trash2, Cat } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
@@ -183,7 +183,12 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                     </div>
                   </div>
                 )) : (
-                  <div className="p-8 text-center text-slate-500 text-sm font-medium">ไม่พบข้อมูล</div>
+                  <div className="p-12 flex flex-col items-center justify-center text-slate-400">
+                    <div className="bg-slate-50 p-3 rounded-full mb-3">
+                      <Cat className="w-10 h-10 text-slate-300" />
+                    </div>
+                    <p className="text-slate-500 font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
+                  </div>
                 )}
               </div>
             </div>
@@ -241,7 +246,14 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             </td>
                           </tr>
                         )) : (
-                          <tr><td colSpan={4} className="p-6 text-center text-slate-400 text-xs">ไม่มีข้อมูลการขาย</td></tr>
+                          <tr>
+                            <td colSpan={5} className="p-10 text-center text-slate-400 text-xs">
+                              <div className="flex flex-col items-center justify-center">
+                                <Cat className="w-8 h-8 mb-2 text-slate-300" />
+                                <p className="font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
+                              </div>
+                            </td>
+                          </tr>
                         )}
                       </tbody>
                     </table>
@@ -301,7 +313,14 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             </td>
                           </tr>
                         )) : (
-                          <tr><td colSpan={4} className="p-6 text-center text-slate-400 text-xs">ไม่มีข้อมูลซื้อเข้า</td></tr>
+                          <tr>
+                            <td colSpan={5} className="p-10 text-center text-slate-400 text-xs">
+                              <div className="flex flex-col items-center justify-center">
+                                <Cat className="w-8 h-8 mb-2 text-slate-300" />
+                                <p className="font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
+                              </div>
+                            </td>
+                          </tr>
                         )}
                       </tbody>
                     </table>
@@ -356,7 +375,14 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                             </td>
                           </tr>
                         )) : (
-                          <tr><td colSpan={3} className="p-6 text-center text-slate-400 text-xs">ไม่มีข้อมูลค่าใช้จ่าย</td></tr>
+                          <tr>
+                            <td colSpan={4} className="p-10 text-center text-slate-400 text-xs">
+                              <div className="flex flex-col items-center justify-center">
+                                <Cat className="w-8 h-8 mb-2 text-slate-300" />
+                                <p className="font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
+                              </div>
+                            </td>
+                          </tr>
                         )}
                       </tbody>
                     </table>
