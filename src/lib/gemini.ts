@@ -18,7 +18,7 @@ export type ExtractedTransaction = {
 
 export async function extractTransaction(text: string, previousContext?: string): Promise<ExtractedTransaction> {
   const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
+    model: "gemini-2.0-flash",
     generationConfig: { responseMimeType: "application/json" }
   });
 
