@@ -16,13 +16,20 @@ export type ExtractedTransaction = {
 };
 
 export async function extractTransaction(text: string): Promise<ExtractedTransaction> {
-  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash",
+    generationConfig: { responseMimeType: "application/json" }
+  });
 
   const prompt = `
 You are an AI assistant helping a wholesale shop owner extract transaction data from Thai natural language.
-The owner will send messages like: "ซื้อกล้วยจากสวนลุงดำ 500 โล โลละ 15 บาท จ่ายแล้ว" or "ขายส้มให้เจ๊ศรี 200 โล โลละ 35 บาท ค้างไว้ก่อน" or "จ่ายค่าไฟ 500"
+The owner will send messages like: "ซื้อกล้วย 500 โล โลละ 15 บาท", "ขายส้มให้เจ๊ศรี 200 โล โลละ 35 บาท", or "จ่ายค่าไฟ 500"
 
-Analyze the text and extract the data into the following JSON format. ONLY output valid JSON without any markdown formatting, backticks, or extra text.
+IMPORTANT RULES:
+1. ALWAYS output valid JSON ONLY.
+2. If the user does not specify if they are buying or selling (e.g., "มะละกอป้านัท 50 โล โลละ 50"), ASSUME IT IS A SALE ("SALE").
+3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
+4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
 
 Expected JSON Structure:
 {
