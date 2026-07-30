@@ -23,8 +23,12 @@ export async function GET() {
         chatBarText: 'เปิดเมนู',
         areas: [
           {
-            bounds: { x: 0, y: 0, width: 2500, height: 1686 },
+            bounds: { x: 0, y: 0, width: 1250, height: 1686 },
             action: { type: 'uri', uri: 'https://sugarmeow.vercel.app' }
+          },
+          {
+            bounds: { x: 1250, y: 0, width: 1250, height: 1686 },
+            action: { type: 'message', text: 'วิธีใช้งาน' }
           }
         ]
       })
