@@ -53,8 +53,8 @@ Analyze this text: "${text}"
     // Strip markdown if present
     const cleaned = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     return JSON.parse(cleaned) as ExtractedTransaction;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to parse Gemini response:", error);
-    throw new Error("Invalid AI response");
+    throw new Error(error.message || String(error));
   }
 }
