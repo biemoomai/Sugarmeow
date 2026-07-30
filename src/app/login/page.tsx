@@ -11,6 +11,9 @@ export default function LoginPage() {
   useEffect(() => {
     if (status === 'authenticated') {
       router.push('/');
+    } else if (status === 'unauthenticated') {
+      // Auto redirect to LINE login for seamless UX
+      signIn('line', { callbackUrl: '/' });
     }
   }, [status, router]);
 
