@@ -94,6 +94,14 @@ export async function POST(req: Request) {
             create: { lineUserId: userId, payload: JSON.stringify(data) }
           });
 
+          if (data.intent === 'UNKNOWN') {
+            await lineClient.replyMessage({
+              replyToken: event.replyToken,
+              messages: [{ type: 'text', text: 'เห้ย ลืมบอกป่าวว่าอันนี้ "ซื้อ" หรือ "ขาย"? พิมพ์มาให้ครบๆ ดิ๊ มึนละเนี่ย' }]
+            });
+            continue;
+          }
+
           let summaryText = '';
           if (data.intent === 'SALE') {
              summaryText = `ขายให้: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ (ไปทวงด้วยนะ)'}`;
@@ -166,12 +174,14 @@ export async function POST(req: Request) {
               }
             ]
           });
-        } catch (e) {
+        } catch (e: any) {
+          const errorMessage = e.message || String(e);
+          console.error("Webhook Error:", e);
           const dashboardUrl = `https://sugarmeow.vercel.app/?userId=${userId}`;
           await lineClient.replyMessage({
             replyToken: event.replyToken,
             messages: [
-              { type: 'text', text: 'พิมพ์อะไรมาวะเนี่ย อ่านไม่รู้เรื่อง เอาใหม่ดิ๊' },
+              { type: 'text', text: `พิมพ์อะไรมาวะเนี่ย อ่านไม่รู้เรื่อง เอาใหม่ดิ๊\n\n(แจ้งแอดมิน: ระบบพังเพราะ "${errorMessage}")` },
               {
                 type: 'flex',
                 altText: 'ทางลัดเข้าเว็บ',

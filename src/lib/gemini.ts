@@ -4,7 +4,7 @@ const apiKey = process.env.GEMINI_API_KEY || '';
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export type ExtractedTransaction = {
-  intent: 'SALE' | 'PURCHASE' | 'EXPENSE';
+  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN';
   name: string;
   product: string;
   quantity: number;
@@ -27,13 +27,13 @@ The owner will send messages like: "ซื้อกล้วย 500 โล โ�
 
 IMPORTANT RULES:
 1. ALWAYS output valid JSON ONLY.
-2. If the user does not specify if they are buying or selling (e.g., "มะละกอป้านัท 50 โล โลละ 50"), ASSUME IT IS A SALE ("SALE").
+2. If the user does not specify if they are buying or selling AND it is ambiguous (e.g., "มะละกอป้านัท 50 โล โลละ 50"), set intent to "UNKNOWN".
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
 4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
 
 Expected JSON Structure:
 {
-  "intent": "SALE" | "PURCHASE" | "EXPENSE",
+  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN",
   "name": "string", // Customer name for SALE, Supplier name for PURCHASE. Empty for EXPENSE.
   "product": "string", // Product name. Empty for EXPENSE.
   "quantity": number, // Amount in kg. 0 for EXPENSE.
