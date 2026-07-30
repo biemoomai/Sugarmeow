@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { lineClient } from '@/lib/line';
 import { extractTransaction } from '@/lib/gemini';
 import { prisma } from '@/lib/prisma';
+import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
 
 export async function POST(req: Request) {
   try {
@@ -355,6 +356,152 @@ export async function POST(req: Request) {
                 messages: [{ type: 'text', text: 'เออ ลบรายการล่าสุดทิ้งให้ละ มือลั่นล่ะสิทีหลังก็ดูดีๆ' }]
               });
             }
+            continue;
+          }
+          
+          if (data.intent === 'REPORT') {
+            const now = new Date();
+            let dateFilter = {};
+            let periodLabel = 'ทั้งหมด';
+
+            if (data.reportPeriod === 'TODAY') {
+              dateFilter = { gte: startOfDay(now), lte: endOfDay(now) };
+              periodLabel = 'วันนี้';
+            } else if (data.reportPeriod === 'WEEK') {
+              dateFilter = { gte: startOfWeek(now, { weekStartsOn: 1 }), lte: endOfWeek(now, { weekStartsOn: 1 }) };
+              periodLabel = 'สัปดาห์นี้';
+            } else if (data.reportPeriod === 'MONTH') {
+              dateFilter = { gte: startOfMonth(now), lte: endOfMonth(now) };
+              periodLabel = 'เดือนนี้';
+            } else if (data.reportPeriod === 'YEAR') {
+              dateFilter = { gte: startOfYear(now), lte: endOfYear(now) };
+              periodLabel = 'ปีนี้';
+            }
+
+            const whereSale: any = { lineUserId: userId };
+            const wherePurchase: any = { lineUserId: userId };
+            const whereExpense: any = { lineUserId: userId };
+
+            if (Object.keys(dateFilter).length > 0) {
+              whereSale.date = dateFilter;
+              wherePurchase.date = dateFilter;
+              whereExpense.date = dateFilter;
+            }
+
+            if (data.reportEntity) {
+              whereSale.customer = { name: { contains: data.reportEntity } };
+              wherePurchase.supplier = { name: { contains: data.reportEntity } };
+            }
+
+            if (data.reportProduct) {
+              whereSale.product = { name: { contains: data.reportProduct } };
+              wherePurchase.product = { name: { contains: data.reportProduct } };
+            }
+
+            let totalSales = 0;
+            let totalPurchases = 0;
+            let totalExpenses = 0;
+
+            const type = data.reportType || 'ALL';
+
+            if (type === 'ALL' || type === 'SALES') {
+              const sales = await prisma.sale.findMany({ where: whereSale });
+              totalSales = sales.reduce((sum, s) => sum + s.totalAmount, 0);
+            }
+            if (type === 'ALL' || type === 'PURCHASES') {
+              const purchases = await prisma.purchase.findMany({ where: wherePurchase });
+              totalPurchases = purchases.reduce((sum, p) => sum + p.totalAmount, 0);
+            }
+            if (type === 'ALL' || type === 'EXPENSES') {
+              const expenses = await prisma.expense.findMany({ where: whereExpense });
+              totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+            }
+
+            const profit = totalSales - totalPurchases - totalExpenses;
+            const fmt = (num: number) => new Intl.NumberFormat('th-TH').format(num);
+
+            let headerTitle = '📊 สรุปยอด';
+            if (type === 'SALES') headerTitle = '📊 สรุปยอดขาย';
+            else if (type === 'PURCHASES') headerTitle = '📊 สรุปยอดซื้อเข้า';
+            else if (type === 'EXPENSES') headerTitle = '📊 สรุปค่าใช้จ่าย';
+
+            if (data.reportProduct) headerTitle += ` (${data.reportProduct})`;
+            if (data.reportEntity) headerTitle += ` [${data.reportEntity}]`;
+
+            const contents: any[] = [];
+            
+            if (type === 'ALL' || type === 'SALES') {
+              contents.push({
+                type: 'box', layout: 'horizontal',
+                contents: [
+                  { type: 'text', text: '💵 ยอดขาย:', size: 'sm', color: '#64748B', flex: 1 },
+                  { type: 'text', text: `฿${fmt(totalSales)}`, size: 'sm', weight: 'bold', color: '#0EA5E9', align: 'end' }
+                ]
+              });
+            }
+            if (type === 'ALL' || type === 'PURCHASES') {
+              contents.push({
+                type: 'box', layout: 'horizontal',
+                contents: [
+                  { type: 'text', text: '📦 ซื้อเข้า:', size: 'sm', color: '#64748B', flex: 1 },
+                  { type: 'text', text: `฿${fmt(totalPurchases)}`, size: 'sm', weight: 'bold', color: '#F59E0B', align: 'end' }
+                ]
+              });
+            }
+            if (type === 'ALL' || type === 'EXPENSES') {
+              contents.push({
+                type: 'box', layout: 'horizontal',
+                contents: [
+                  { type: 'text', text: '💸 ค่าใช้จ่าย:', size: 'sm', color: '#64748B', flex: 1 },
+                  { type: 'text', text: `฿${fmt(totalExpenses)}`, size: 'sm', weight: 'bold', color: '#FB7185', align: 'end' }
+                ]
+              });
+            }
+            if (type === 'ALL') {
+              contents.push(
+                { type: 'separator', margin: 'md' },
+                {
+                  type: 'box', layout: 'horizontal', margin: 'md',
+                  contents: [
+                    { type: 'text', text: '💰 กำไรสุทธิ:', size: 'md', weight: 'bold', color: '#334155', flex: 1 },
+                    { type: 'text', text: `฿${fmt(profit)}`, size: 'md', weight: 'bold', color: profit >= 0 ? '#10B981' : '#EF4444', align: 'end' }
+                  ]
+                }
+              );
+            }
+
+            await lineClient.replyMessage({
+              replyToken: event.replyToken,
+              messages: [
+                {
+                  type: 'flex',
+                  altText: 'สรุปยอดของคุณ',
+                  contents: {
+                    type: 'bubble',
+                    header: {
+                      type: 'box', layout: 'vertical', backgroundColor: '#0F172A',
+                      contents: [
+                        { type: 'text', text: headerTitle, weight: 'bold', color: '#F8FAFC', size: 'md' },
+                        { type: 'text', text: `ช่วงเวลา: ${periodLabel}`, size: 'xs', color: '#94A3B8', margin: 'xs' }
+                      ]
+                    },
+                    body: {
+                      type: 'box', layout: 'vertical', spacing: 'sm',
+                      contents: contents
+                    },
+                    footer: {
+                      type: 'box', layout: 'vertical',
+                      contents: [
+                        {
+                          type: 'button', style: 'primary', color: '#475569', height: 'sm',
+                          action: { type: 'uri', label: '📲 ดูข้อมูลเต็มๆ ในแดชบอร์ด', uri: `https://sugarmeow.vercel.app/` }
+                        }
+                      ]
+                    }
+                  }
+                }
+              ]
+            });
             continue;
           }
 

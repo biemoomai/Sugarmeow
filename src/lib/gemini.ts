@@ -14,7 +14,7 @@ const groq = new Groq({ apiKey: groqApiKey });
 const cerebrasApiKey = process.env.CEREBRAS_API_KEY || '';
 
 export type ExtractedTransaction = {
-  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE';
+  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE' | 'REPORT';
   replyMessage?: string;
   name: string;
   product: string;
@@ -24,6 +24,11 @@ export type ExtractedTransaction = {
   status: 'PAID' | 'PENDING';
   expenseCategory: string;
   expenseDescription: string;
+  // Report fields
+  reportType?: 'ALL' | 'SALES' | 'PURCHASES' | 'EXPENSES';
+  reportPeriod?: 'TODAY' | 'WEEK' | 'MONTH' | 'YEAR' | 'ALL';
+  reportEntity?: string;
+  reportProduct?: string;
 };
 
 export async function extractTransaction(text: string, previousContext?: string): Promise<ExtractedTransaction> {
@@ -37,7 +42,12 @@ IMPORTANT RULES:
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
 4. If quantity and unitPrice are given but no totalAmount, calculate it (quantity * unitPrice). If a total amount for a single product/item is given without quantity (e.g. "สั่งเสื้อยืดจาก Shopee 250 บาท"), set quantity to 1, unitPrice to 250, and totalAmount to 250.
 5. If the user explicitly asks to cancel, delete, or undo the previous/latest transaction, set intent to "UNDO".
-6. If the message contains typos, try to handle them gracefully. If the message is complete nonsense, gibberish, or you cannot understand it at all, set intent to "INCOMPLETE" and write a polite confused message in "replyMessage" asking them to retype it clearly.
+6. If the user asks for a summary or report (e.g., "สรุปยอด", "ยอดขายเดือนนี้", "เจ๊ศรีซื้อกล้วยไปเท่าไหร่"), set intent to "REPORT". 
+   - Parse 'reportType' to 'SALES', 'PURCHASES', 'EXPENSES', or 'ALL' (default is 'ALL' if they just say "สรุปยอด").
+   - Parse 'reportPeriod' to 'TODAY', 'WEEK', 'MONTH', 'YEAR', or 'ALL' (default is 'TODAY' if not specified).
+   - Extract 'reportEntity' if they ask about a specific person (e.g. "เจ๊ศรี").
+   - Extract 'reportProduct' if they ask about a specific product (e.g. "กล้วย").
+7. If the message contains typos, try to handle them gracefully. If the message is complete nonsense, gibberish, or you cannot understand it at all, set intent to "INCOMPLETE" and write a polite confused message in "replyMessage" asking them to retype it clearly.
 
 CONVERSATIONAL CONTEXT:
 The user might be correcting a PREVIOUS transaction or answering your question from a previous INCOMPLETE state.
@@ -48,7 +58,7 @@ If PREVIOUS_TRANSACTION is provided:
 
 Expected JSON Structure:
 {
-  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO" | "INCOMPLETE",
+  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO" | "INCOMPLETE" | "REPORT",
   "replyMessage": "string",
   "name": "string",
   "product": "string",
@@ -57,7 +67,11 @@ Expected JSON Structure:
   "totalAmount": number,
   "status": "PAID" | "PENDING",
   "expenseCategory": "string",
-  "expenseDescription": "string"
+  "expenseDescription": "string",
+  "reportType": "ALL" | "SALES" | "PURCHASES" | "EXPENSES",
+  "reportPeriod": "TODAY" | "WEEK" | "MONTH" | "YEAR" | "ALL",
+  "reportEntity": "string",
+  "reportProduct": "string"
 }
 
 PREVIOUS_TRANSACTION:
