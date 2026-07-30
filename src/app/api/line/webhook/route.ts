@@ -85,7 +85,13 @@ export async function POST(req: Request) {
         }
 
         try {
-          const data = await extractTransaction(text);
+          // Check for existing draft to provide context
+          const existingDraft = await prisma.transactionDraft.findUnique({
+            where: { lineUserId: userId }
+          });
+          const previousContext = existingDraft ? existingDraft.payload : undefined;
+
+          const data = await extractTransaction(text, previousContext);
           
           // Save to draft
           await prisma.transactionDraft.upsert({

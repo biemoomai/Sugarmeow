@@ -15,7 +15,7 @@ export type ExtractedTransaction = {
   expenseDescription: string;
 };
 
-export async function extractTransaction(text: string): Promise<ExtractedTransaction> {
+export async function extractTransaction(text: string, previousContext?: string): Promise<ExtractedTransaction> {
   const model = genAI.getGenerativeModel({ 
     model: "gemini-flash-latest",
     generationConfig: { responseMimeType: "application/json" }
@@ -31,6 +31,13 @@ IMPORTANT RULES:
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
 4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
 
+CONVERSATIONAL CONTEXT:
+The user might be correcting a PREVIOUS transaction (e.g., they just said "ซื้อมะละกอ 10 โล" and now they say "จ่ายแล้ว" or "เปลี่ยนเป็น 20 โล").
+If PREVIOUS_TRANSACTION is provided:
+- Determine if the NEW TEXT is a correction/addition to the PREVIOUS_TRANSACTION. 
+- If YES, merge the new info into the previous data and output the UPDATED JSON. (If it's just "จ่ายแล้ว", change status to "PAID" and keep the rest the same).
+- If the NEW TEXT is a completely unrelated transaction (e.g., previous was buying apples, new text is "จ่ายค่าไฟ"), IGNORE the previous transaction and extract the new one.
+
 Expected JSON Structure:
 {
   "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN",
@@ -44,7 +51,10 @@ Expected JSON Structure:
   "expenseDescription": "string" // Only for EXPENSE.
 }
 
-Analyze this text: "${text}"
+PREVIOUS_TRANSACTION:
+${previousContext || "None"}
+
+NEW TEXT: "${text}"
 `;
 
   try {
