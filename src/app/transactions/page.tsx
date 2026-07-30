@@ -74,6 +74,8 @@ export default async function TransactionsPage(props: { searchParams: Promise<{ 
       date: s.date.toISOString(),
       type: 'ขายสินค้า',
       detail: `${s.customer.name} (${s.product.name})`,
+      entityName: s.customer.name,
+      productName: s.product.name,
       amount: s.totalAmount,
       status: s.paymentStatus
     })),
@@ -82,6 +84,8 @@ export default async function TransactionsPage(props: { searchParams: Promise<{ 
       date: p.date.toISOString(),
       type: 'ซื้อเข้า',
       detail: `${p.supplier.name} (${p.product.name})`,
+      entityName: p.supplier.name,
+      productName: p.product.name,
       amount: p.totalAmount,
       status: 'PAID'
     })),
@@ -90,6 +94,8 @@ export default async function TransactionsPage(props: { searchParams: Promise<{ 
       date: e.date.toISOString(),
       type: 'ค่าใช้จ่าย',
       detail: e.description || e.category,
+      entityName: e.category,
+      productName: e.description || '-',
       amount: e.amount,
       status: 'PAID'
     }))

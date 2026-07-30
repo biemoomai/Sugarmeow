@@ -12,6 +12,8 @@ type TransactionRecord = {
   date: string;
   type: string;
   detail: string;
+  entityName?: string;
+  productName?: string;
   amount: number;
   status: string;
 };
@@ -151,7 +153,8 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                           {t.type}
                         </span>
                       </div>
-                      <p className="font-bold text-slate-700 text-sm truncate">{t.detail}</p>
+                      <p className="font-bold text-slate-700 text-sm truncate">{t.entityName}</p>
+                      {t.productName && <p className="text-xs text-slate-500 mt-0.5 truncate">{t.productName}</p>}
                     </div>
                     
                     <div className="text-right shrink-0 flex flex-col items-end">
@@ -215,16 +218,18 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                   <div className="">
                     <table className="w-full text-left border-collapse table-fixed">
                       <colgroup>
+                        <col className="w-[15%]" />
+                        <col className="w-[23%]" />
+                        <col className="w-[20%]" />
                         <col className="w-[18%]" />
-                        <col className="w-[34%]" />
-                        <col className="w-[20%]" />
-                        <col className="w-[20%]" />
-                        <col className="w-[8%]" />
+                        <col className="w-[18%]" />
+                        <col className="w-[6%]" />
                       </colgroup>
                       <thead>
                         <tr className="bg-sky-50/30 text-sky-700/60 text-[10px] font-bold uppercase tracking-wider border-b border-sky-100/50">
                           <th className="px-2 py-2 pl-4">วันที่</th>
-                          <th className="px-2 py-2">รายการ</th>
+                          <th className="px-2 py-2">ลูกค้า</th>
+                          <th className="px-2 py-2">สินค้า</th>
                           <th className="px-2 py-2 text-right">ยอดเงิน</th>
                           <th className="px-2 py-2 text-center">สถานะ</th>
                           <th className="px-2 py-2 pr-4 text-right">ลบ</th>
@@ -234,7 +239,8 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         {transactions.filter(t => t.type === 'ขายสินค้า').length > 0 ? transactions.filter(t => t.type === 'ขายสินค้า').map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
-                            <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.detail}</td>
+                            <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
+                            <td className="px-2 py-3 text-slate-600 text-xs truncate">{t.productName}</td>
                             <td className="px-2 py-3 text-right font-black text-sky-600 whitespace-nowrap">+{formatMoney(t.amount)}</td>
                             <td className="px-2 py-3 text-center whitespace-nowrap">
                               {t.status === 'PAID' ? <span className="text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap">จ่ายแล้ว</span> : <span className="text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold whitespace-nowrap">ค้างชำระ</span>}
@@ -247,7 +253,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                           </tr>
                         )) : (
                           <tr>
-                            <td colSpan={5} className="p-10 text-center text-slate-400 text-xs">
+                            <td colSpan={6} className="p-10 text-center text-slate-400 text-xs">
                               <div className="flex flex-col items-center justify-center">
                                 <Cat className="w-8 h-8 mb-2 text-slate-300" />
                                 <p className="font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
@@ -282,16 +288,18 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                   <div className="">
                     <table className="w-full text-left border-collapse table-fixed">
                       <colgroup>
+                        <col className="w-[15%]" />
+                        <col className="w-[23%]" />
+                        <col className="w-[20%]" />
                         <col className="w-[18%]" />
-                        <col className="w-[34%]" />
-                        <col className="w-[20%]" />
-                        <col className="w-[20%]" />
-                        <col className="w-[8%]" />
+                        <col className="w-[18%]" />
+                        <col className="w-[6%]" />
                       </colgroup>
                       <thead>
                         <tr className="bg-amber-50/30 text-amber-700/60 text-[10px] font-bold uppercase tracking-wider border-b border-amber-100/50">
                           <th className="px-2 py-2 pl-4">วันที่</th>
-                          <th className="px-2 py-2">รายการ</th>
+                          <th className="px-2 py-2">ซัพพลายเออร์</th>
+                          <th className="px-2 py-2">สินค้า</th>
                           <th className="px-2 py-2 text-right">ยอดเงิน</th>
                           <th className="px-2 py-2 text-center">สถานะ</th>
                           <th className="px-2 py-2 pr-4 text-right">ลบ</th>
@@ -301,7 +309,8 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         {transactions.filter(t => t.type === 'ซื้อเข้า').length > 0 ? transactions.filter(t => t.type === 'ซื้อเข้า').map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
-                            <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.detail}</td>
+                            <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
+                            <td className="px-2 py-3 text-slate-600 text-xs truncate">{t.productName}</td>
                             <td className="px-2 py-3 text-right font-black text-amber-600 whitespace-nowrap">-{formatMoney(t.amount)}</td>
                             <td className="px-2 py-3 text-center">
                               {t.status === 'PAID' ? <span className="text-emerald-600 bg-emerald-50 border border-emerald-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold">จ่ายแล้ว</span> : <span className="text-rose-600 bg-rose-50 border border-rose-100/50 px-1.5 py-0.5 rounded text-[9px] font-bold">ค้างชำระ</span>}
@@ -314,7 +323,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                           </tr>
                         )) : (
                           <tr>
-                            <td colSpan={5} className="p-10 text-center text-slate-400 text-xs">
+                            <td colSpan={6} className="p-10 text-center text-slate-400 text-xs">
                               <div className="flex flex-col items-center justify-center">
                                 <Cat className="w-8 h-8 mb-2 text-slate-300" />
                                 <p className="font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
@@ -349,15 +358,17 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                   <div className="">
                     <table className="w-full text-left border-collapse table-fixed">
                       <colgroup>
-                        <col className="w-[20%]" />
-                        <col className="w-[45%]" />
+                        <col className="w-[15%]" />
                         <col className="w-[25%]" />
-                        <col className="w-[10%]" />
+                        <col className="w-[34%]" />
+                        <col className="w-[20%]" />
+                        <col className="w-[6%]" />
                       </colgroup>
                       <thead>
                         <tr className="bg-rose-50/30 text-rose-700/60 text-[10px] font-bold uppercase tracking-wider border-b border-rose-100/50">
                           <th className="px-2 py-2 pl-4">วันที่</th>
-                          <th className="px-2 py-2">รายการ</th>
+                          <th className="px-2 py-2">หมวดหมู่</th>
+                          <th className="px-2 py-2">รายละเอียด</th>
                           <th className="px-2 py-2 text-right">ยอดเงิน</th>
                           <th className="px-2 py-2 pr-4 text-right">ลบ</th>
                         </tr>
@@ -366,7 +377,8 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                         {transactions.filter(t => t.type === 'ค่าใช้จ่าย').length > 0 ? transactions.filter(t => t.type === 'ค่าใช้จ่าย').map((t) => (
                           <tr key={t.id} className="hover:bg-slate-50/50 transition-colors">
                             <td className="px-2 py-3 pl-4 text-slate-500 whitespace-nowrap">{new Date(t.date).toLocaleDateString('th-TH', { month: 'short', day: 'numeric' })}</td>
-                            <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.detail}</td>
+                            <td className="px-2 py-3 font-bold text-slate-700 truncate">{t.entityName}</td>
+                            <td className="px-2 py-3 text-slate-600 text-xs truncate">{t.productName}</td>
                             <td className="px-2 py-3 text-right font-black text-rose-600 whitespace-nowrap">-{formatMoney(t.amount)}</td>
                             <td className="px-2 py-3 pr-4 text-right">
                               <button onClick={() => handleDelete(t.id)} disabled={isDeleting === t.id} className="text-slate-300 hover:text-rose-500 transition-colors">
@@ -376,7 +388,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                           </tr>
                         )) : (
                           <tr>
-                            <td colSpan={4} className="p-10 text-center text-slate-400 text-xs">
+                            <td colSpan={5} className="p-10 text-center text-slate-400 text-xs">
                               <div className="flex flex-col items-center justify-center">
                                 <Cat className="w-8 h-8 mb-2 text-slate-300" />
                                 <p className="font-bold">ยังไม่มีรายการในช่วงเวลานี้</p>
