@@ -37,7 +37,9 @@ export default function RootLayout({
         <div className="flex-1">
           {children}
         </div>
-        <BottomNav />
+        <Suspense fallback={<div className="h-16"></div>}>
+          <BottomNav />
+        </Suspense>
       </body>
     </html>
   );
