@@ -1,7 +1,15 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 
-const apiKey = process.env.GEMINI_API_KEY || '';
-const genAI = new GoogleGenerativeAI(apiKey);
+const geminiApiKey = process.env.GEMINI_API_KEY || '';
+const genAI = new GoogleGenerativeAI(geminiApiKey);
+const geminiModel = genAI.getGenerativeModel({ 
+  model: "gemini-1.5-flash",
+  generationConfig: { responseMimeType: "application/json" }
+});
+
+const groqApiKey = process.env.GROQ_API_KEY || '';
+const groq = new Groq({ apiKey: groqApiKey });
 
 export type ExtractedTransaction = {
   intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNKNOWN' | 'UNDO' | 'INCOMPLETE';
@@ -17,11 +25,6 @@ export type ExtractedTransaction = {
 };
 
 export async function extractTransaction(text: string, previousContext?: string): Promise<ExtractedTransaction> {
-  const model = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
-    generationConfig: { responseMimeType: "application/json" }
-  });
-
   const prompt = `
 You are an AI assistant helping users extract transaction data (wholesale, retail, online shopping like Shopee/Lazada, or personal expenses) from Thai natural language.
 The user will send messages like: "ซื้อกล้วย 500 โล โลละ 15 บาท", "สั่งเสื้อยืดจาก Shopee 250 บาท", "ขายส้มให้เจ๊ศรี 200 โล โลละ 35 บาท", or "จ่ายค่าไฟ 500"
@@ -44,15 +47,15 @@ If PREVIOUS_TRANSACTION is provided:
 Expected JSON Structure:
 {
   "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNKNOWN" | "UNDO" | "INCOMPLETE",
-  "replyMessage": "string", // Only populate this if intent is "INCOMPLETE". Ask the user for the missing details in natural Thai.
-  "name": "string", // Customer name for SALE, Supplier name for PURCHASE. Empty for EXPENSE.
-  "product": "string", // Product name. Empty for EXPENSE.
-  "quantity": number, // Amount in kg. 0 for EXPENSE.
-  "unitPrice": number, // Price per kg. 0 for EXPENSE.
-  "totalAmount": number, // Total amount. If not provided but qty and unitPrice are, calculate it.
-  "status": "PAID" | "PENDING", // If mentioned they paid or not. Default to PAID for expenses, or PENDING if not clear for sales/purchases.
-  "expenseCategory": "string", // Only for EXPENSE. (e.g. ค่าไฟ, ค่าน้ำ, ค่าแรง)
-  "expenseDescription": "string" // Only for EXPENSE.
+  "replyMessage": "string",
+  "name": "string",
+  "product": "string",
+  "quantity": number,
+  "unitPrice": number,
+  "totalAmount": number,
+  "status": "PAID" | "PENDING",
+  "expenseCategory": "string",
+  "expenseDescription": "string"
 }
 
 PREVIOUS_TRANSACTION:
@@ -61,14 +64,33 @@ ${previousContext || "None"}
 NEW TEXT: "${text}"
 `;
 
-  try {
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
-    // Strip markdown if present
-    const cleaned = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    return JSON.parse(cleaned) as ExtractedTransaction;
-  } catch (error: any) {
-    console.error("Failed to parse Gemini response:", error);
-    throw new Error(error.message || String(error));
+  // Tier 1: Try Google Gemini
+  if (geminiApiKey) {
+    try {
+      console.log("Attempting AI extraction with Google Gemini...");
+      const result = await geminiModel.generateContent(prompt);
+      const cleaned = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleaned) as ExtractedTransaction;
+    } catch (error: any) {
+      console.warn("Gemini AI failed, preparing to fallback to Groq...", error.message || error);
+    }
   }
+
+  // Tier 2: Try Groq (Llama 3)
+  if (groqApiKey) {
+    try {
+      console.log("Attempting AI extraction with Groq (Llama 3)...");
+      const chatCompletion = await groq.chat.completions.create({
+        messages: [{ role: 'user', content: prompt }],
+        model: 'llama3-70b-8192',
+        response_format: { type: 'json_object' },
+      });
+      const cleaned = (chatCompletion.choices[0]?.message?.content || '{}').replace(/```json/g, '').replace(/```/g, '').trim();
+      return JSON.parse(cleaned) as ExtractedTransaction;
+    } catch (error: any) {
+      console.warn("Groq AI failed...", error.message || error);
+    }
+  }
+
+  throw new Error("All AI providers (Gemini, Groq) failed or no API keys are configured.");
 }
