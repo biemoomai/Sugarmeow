@@ -23,14 +23,14 @@ export async function extractTransaction(text: string, previousContext?: string)
   });
 
   const prompt = `
-You are an AI assistant helping a wholesale shop owner extract transaction data from Thai natural language.
-The owner will send messages like: "ซื้อกล้วย 500 โล โลละ 15 บาท", "ขายส้มให้เจ๊ศรี 200 โล โลละ 35 บาท", or "จ่ายค่าไฟ 500"
+You are an AI assistant helping users extract transaction data (wholesale, retail, online shopping like Shopee/Lazada, or personal expenses) from Thai natural language.
+The user will send messages like: "ซื้อกล้วย 500 โล โลละ 15 บาท", "สั่งเสื้อยืดจาก Shopee 250 บาท", "ขายส้มให้เจ๊ศรี 200 โล โลละ 35 บาท", or "จ่ายค่าไฟ 500"
 
 IMPORTANT RULES:
 1. ALWAYS output valid JSON ONLY.
 2. If critical information is missing (e.g. you don't know if it's a purchase or sale, or missing quantity/price for a product), set intent to "INCOMPLETE" and write a natural Thai response in "replyMessage" asking the user for the specific missing info. Example: "ตกลงอันนี้ซื้อเข้ามาหรือขายออกไปครับ?" or "มะละกอนี่กี่โล โลละเท่าไหร่นะครับ?"
 3. If they don't specify a person's name, use "ลูกค้าทั่วไป" (for SALE) or "ผู้ขายทั่วไป" (for PURCHASE).
-4. If they give quantity and unitPrice but no totalAmount, calculate it (quantity * unitPrice).
+4. If quantity and unitPrice are given but no totalAmount, calculate it (quantity * unitPrice). If a total amount for a single product/item is given without quantity (e.g. "สั่งเสื้อยืดจาก Shopee 250 บาท"), set quantity to 1, unitPrice to 250, and totalAmount to 250.
 5. If the user explicitly asks to cancel, delete, or undo the previous/latest transaction, set intent to "UNDO".
 6. If the message contains typos, try to handle them gracefully. If the message is complete nonsense, gibberish, or you cannot understand it at all, set intent to "INCOMPLETE" and write a polite confused message in "replyMessage" asking them to retype it clearly.
 
