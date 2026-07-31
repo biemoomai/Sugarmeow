@@ -14,7 +14,7 @@ const groq = new Groq({ apiKey: groqApiKey });
 const cerebrasApiKey = process.env.CEREBRAS_API_KEY || '';
 
 export type ExtractedTransaction = {
-  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNDO' | 'DELETE_ALL' | 'INCOMPLETE' | 'REPORT' | 'EDIT' | 'CHAT';
+  intent: 'SALE' | 'PURCHASE' | 'EXPENSE' | 'UNDO' | 'DELETE_ALL' | 'INCOMPLETE' | 'REPORT' | 'EDIT' | 'CONTACTS' | 'CHAT';
   replyMessage?: string;
   date?: string;
   name: string;
@@ -70,6 +70,7 @@ IMPORTANT RULES:
 16. If the user tries to do something related to accounting but the information is unclear or missing, set intent to "INCOMPLETE" and ask them clearly in "replyMessage" to provide the missing info using the sarcastic persona.
 17. If the user specifies a date (e.g. "พรุ่งนี้", "เมื่อวาน", "วันที่ 12"), calculate it relative to the current date and time (\${new Date().toLocaleString('th-TH')}) and return it as an ISO string in the 'date' field. If no date is mentioned, omit the 'date' field.
 18. If the user explicitly asks to delete ALL transactions or reset everything (e.g. "ล้างรายการใหม่หมด", "ลบทั้งหมด", "ลบทุกรายการ", "รีเซ็ต"), set intent to "DELETE_ALL".
+19. If the user asks who they are buying or selling with, or asks for a list of contacts/customers/suppliers (e.g. "ตอนนี้ซื้อขายกับใครอยู่บ้าง", "มีลูกค้ากี่คน"), set intent to "CONTACTS".
 
 CONVERSATIONAL CONTEXT:
 The user might be correcting a PREVIOUS transaction or answering your question from a previous INCOMPLETE state.
@@ -80,7 +81,7 @@ If PREVIOUS_TRANSACTION is provided:
 
 Expected JSON Structure:
 {
-  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNDO" | "DELETE_ALL" | "INCOMPLETE" | "REPORT" | "EDIT" | "CHAT",
+  "intent": "SALE" | "PURCHASE" | "EXPENSE" | "UNDO" | "DELETE_ALL" | "INCOMPLETE" | "REPORT" | "EDIT" | "CONTACTS" | "CHAT",
   "replyMessage": "string",
   "date": "YYYY-MM-DD",
   "name": "string",

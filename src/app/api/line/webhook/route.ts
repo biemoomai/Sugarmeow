@@ -326,8 +326,8 @@ export async function POST(req: Request) {
           if (data.intent === 'UNDO') {
             // Find the most recent transaction across Sale, Purchase, Expense
             const [lastSale, lastPurchase, lastExpense] = await Promise.all([
-              prisma.sale.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' } }),
-              prisma.purchase.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' } }),
+              prisma.sale.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' }, include: { customer: true, product: true } }),
+              prisma.purchase.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' }, include: { supplier: true, product: true } }),
               prisma.expense.findFirst({ where: { lineUserId: userId }, orderBy: { createdAt: 'desc' } })
             ]);
 
@@ -344,27 +344,141 @@ export async function POST(req: Request) {
                 messages: [{ type: 'text', text: 'จะให้ลบอะไรวะ ยังไม่เคยบันทึกอะไรเลยสักอย่าง!' }]
               });
             } else {
-              if (latest.type === 'SALE') await prisma.sale.delete({ where: { id: latest.record!.id } });
-              else if (latest.type === 'PURCHASE') await prisma.purchase.delete({ where: { id: latest.record!.id } });
-              else if (latest.type === 'EXPENSE') await prisma.expense.delete({ where: { id: latest.record!.id } });
+              let detailText = '';
+              const r = latest.record as any;
+              if (latest.type === 'SALE') detailText = `ขาย: ${r.customer?.name} (${r.product?.name}) ยอด ฿${new Intl.NumberFormat('th-TH').format(r.totalAmount)}`;
+              else if (latest.type === 'PURCHASE') detailText = `ซื้อ: ${r.supplier?.name} (${r.product?.name}) ยอด ฿${new Intl.NumberFormat('th-TH').format(r.totalAmount)}`;
+              else if (latest.type === 'EXPENSE') detailText = `ค่าใช้จ่าย: ${r.category} ยอด ฿${new Intl.NumberFormat('th-TH').format(r.amount)}`;
+
+              // Update draft to hold the target to delete
+              await prisma.transactionDraft.upsert({
+                where: { lineUserId: userId },
+                update: { payload: JSON.stringify({ intent: 'CONFIRM_UNDO', targetId: r.id, targetType: latest.type }) },
+                create: { lineUserId: userId, payload: JSON.stringify({ intent: 'CONFIRM_UNDO', targetId: r.id, targetType: latest.type }) }
+              });
 
               await lineClient.replyMessage({
                 replyToken: event.replyToken,
-                messages: [{ type: 'text', text: 'เออ ลบรายการล่าสุดทิ้งให้ละ มือลั่นล่ะสิทีหลังก็ดูดีๆ' }]
+                messages: [{
+                  type: 'flex', altText: 'ยืนยันการลบรายการล่าสุด',
+                  contents: {
+                    type: 'bubble',
+                    header: {
+                      type: 'box', layout: 'vertical', backgroundColor: '#FEF2F2',
+                      contents: [{ type: 'text', text: '⚠️ ยืนยันลบรายการล่าสุด?', weight: 'bold', color: '#DC2626' }]
+                    },
+                    body: {
+                      type: 'box', layout: 'vertical',
+                      contents: [{ type: 'text', text: detailText, wrap: true, color: '#475569', size: 'sm' }]
+                    },
+                    footer: {
+                      type: 'box', layout: 'horizontal', spacing: 'sm',
+                      contents: [
+                        { type: 'button', style: 'primary', color: '#DC2626', action: { type: 'postback', label: 'ลบเลย', data: 'action=confirm_undo' } },
+                        { type: 'button', style: 'secondary', action: { type: 'postback', label: 'ยกเลิก', data: 'action=cancel' } }
+                      ]
+                    }
+                  }
+                }]
               });
             }
             continue;
           }
 
           if (data.intent === 'DELETE_ALL') {
-            await prisma.sale.deleteMany({ where: { lineUserId: userId } });
-            await prisma.purchase.deleteMany({ where: { lineUserId: userId } });
-            await prisma.expense.deleteMany({ where: { lineUserId: userId } });
-            await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
+            const [saleCount, purchaseCount, expenseCount] = await Promise.all([
+              prisma.sale.count({ where: { lineUserId: userId } }),
+              prisma.purchase.count({ where: { lineUserId: userId } }),
+              prisma.expense.count({ where: { lineUserId: userId } })
+            ]);
+
+            const total = saleCount + purchaseCount + expenseCount;
+
+            if (total === 0) {
+              await lineClient.replyMessage({
+                replyToken: event.replyToken,
+                messages: [{ type: 'text', text: 'ไม่มีข้อมูลให้ลบเว้ย ว่างเปล่า!' }]
+              });
+              continue;
+            }
+
+            await prisma.transactionDraft.upsert({
+              where: { lineUserId: userId },
+              update: { payload: JSON.stringify({ intent: 'CONFIRM_DELETE_ALL' }) },
+              create: { lineUserId: userId, payload: JSON.stringify({ intent: 'CONFIRM_DELETE_ALL' }) }
+            });
 
             await lineClient.replyMessage({
               replyToken: event.replyToken,
-              messages: [{ type: 'text', text: 'เออ ล้างรายการให้ใหม่หมดละ โล่งเลยทีนี้ พอใจยัง?' }]
+              messages: [{
+                type: 'flex', altText: 'ยืนยันล้างข้อมูลทั้งหมด',
+                contents: {
+                  type: 'bubble',
+                  header: {
+                    type: 'box', layout: 'vertical', backgroundColor: '#991B1B',
+                    contents: [{ type: 'text', text: '🚨 ยืนยันล้างข้อมูลทั้งหมด?', weight: 'bold', color: '#FFFFFF', size: 'md' }]
+                  },
+                  body: {
+                    type: 'box', layout: 'vertical', spacing: 'sm',
+                    contents: [
+                      { type: 'text', text: `คุณกำลังจะลบบิลทั้งหมด ${total} รายการ ทิ้งถาวร! (ขาย ${saleCount} | ซื้อ ${purchaseCount} | ค่าใช้จ่าย ${expenseCount})`, wrap: true, color: '#475569', size: 'sm' }
+                    ]
+                  },
+                  footer: {
+                    type: 'box', layout: 'horizontal', spacing: 'sm',
+                    contents: [
+                      { type: 'button', style: 'primary', color: '#DC2626', action: { type: 'postback', label: 'ยืนยันล้างทิ้ง', data: 'action=confirm_delete_all' } },
+                      { type: 'button', style: 'secondary', action: { type: 'postback', label: 'ยกเลิก', data: 'action=cancel' } }
+                    ]
+                  }
+                }
+              }]
+            });
+            continue;
+          }
+
+          if (data.intent === 'CONTACTS') {
+            const [sales, purchases] = await Promise.all([
+              prisma.sale.findMany({ where: { lineUserId: userId }, include: { customer: true } }),
+              prisma.purchase.findMany({ where: { lineUserId: userId }, include: { supplier: true } })
+            ]);
+
+            const customers = Array.from(new Set(sales.map(s => s.customer?.name).filter(Boolean)));
+            const suppliers = Array.from(new Set(purchases.map(p => p.supplier?.name).filter(Boolean)));
+
+            const contents: any[] = [];
+
+            if (customers.length > 0) {
+              contents.push({ type: 'text', text: '🛍️ ลูกค้าที่เคยขายให้:', weight: 'bold', color: '#0EA5E9', size: 'sm', margin: 'md' });
+              contents.push({ type: 'text', text: customers.slice(0, 15).join(', ') + (customers.length > 15 ? ' และอื่นๆ' : ''), wrap: true, size: 'xs', color: '#475569' });
+            }
+
+            if (suppliers.length > 0) {
+              contents.push({ type: 'text', text: '📦 ซัพพลายเออร์ที่เคยซื้อด้วย:', weight: 'bold', color: '#F59E0B', size: 'sm', margin: 'md' });
+              contents.push({ type: 'text', text: suppliers.slice(0, 15).join(', ') + (suppliers.length > 15 ? ' และอื่นๆ' : ''), wrap: true, size: 'xs', color: '#475569' });
+            }
+
+            if (contents.length === 0) {
+              contents.push({ type: 'text', text: 'ยังไม่เคยซื้อขายกับใครเลย ไปหาลูกค้ามาก่อนไป!', wrap: true, size: 'sm', color: '#64748B' });
+            }
+
+            await lineClient.replyMessage({
+              replyToken: event.replyToken,
+              messages: [{
+                type: 'flex', altText: 'รายชื่อคู่ค้าของคุณ',
+                contents: {
+                  type: 'bubble',
+                  header: {
+                    type: 'box', layout: 'vertical', backgroundColor: '#F8FAFC',
+                    contents: [{ type: 'text', text: '👥 รายชื่อคู่ค้า', weight: 'bold', color: '#1E293B', size: 'md' }]
+                  },
+                  body: { type: 'box', layout: 'vertical', spacing: 'sm', contents: contents },
+                  footer: {
+                    type: 'box', layout: 'vertical',
+                    contents: [{ type: 'button', style: 'primary', color: '#475569', height: 'sm', action: { type: 'uri', label: '📲 ดูข้อมูลเต็มๆ ในแดชบอร์ด', uri: `https://sugarmeow.vercel.app/` } }]
+                  }
+                }
+              }]
             });
             continue;
           }
@@ -867,6 +981,46 @@ export async function POST(req: Request) {
              });
            } catch (e) {
              console.error("Cancel postback error:", e);
+           }
+        } else if (data === 'action=confirm_undo') {
+           try {
+             const draft = await prisma.transactionDraft.findUnique({ where: { lineUserId: userId } });
+             if (draft) {
+               const payload = JSON.parse(draft.payload);
+               if (payload.intent === 'CONFIRM_UNDO' && payload.targetId && payload.targetType) {
+                 if (payload.targetType === 'SALE') await prisma.sale.delete({ where: { id: payload.targetId } });
+                 else if (payload.targetType === 'PURCHASE') await prisma.purchase.delete({ where: { id: payload.targetId } });
+                 else if (payload.targetType === 'EXPENSE') await prisma.expense.delete({ where: { id: payload.targetId } });
+
+                 await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
+                 await lineClient.replyMessage({
+                   replyToken: event.replyToken,
+                   messages: [{ type: 'text', text: 'เออ ลบรายการล่าสุดทิ้งให้ละ ทีหลังก็ดูดีๆ' }]
+                 });
+               }
+             }
+           } catch (e) {
+             console.error("Confirm undo error:", e);
+           }
+        } else if (data === 'action=confirm_delete_all') {
+           try {
+             const draft = await prisma.transactionDraft.findUnique({ where: { lineUserId: userId } });
+             if (draft) {
+               const payload = JSON.parse(draft.payload);
+               if (payload.intent === 'CONFIRM_DELETE_ALL') {
+                 await prisma.sale.deleteMany({ where: { lineUserId: userId } });
+                 await prisma.purchase.deleteMany({ where: { lineUserId: userId } });
+                 await prisma.expense.deleteMany({ where: { lineUserId: userId } });
+                 await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
+
+                 await lineClient.replyMessage({
+                   replyToken: event.replyToken,
+                   messages: [{ type: 'text', text: 'เออ ล้างรายการให้ใหม่หมดละ โล่งเลยทีนี้ พอใจยัง?' }]
+                 });
+               }
+             }
+           } catch (e) {
+             console.error("Confirm delete all error:", e);
            }
         } else if (data === 'action=confirm') {
            const draft = await prisma.transactionDraft.findUnique({ where: { lineUserId: userId } });
