@@ -321,13 +321,7 @@ export async function POST(req: Request) {
             continue;
           }
 
-          if (data.intent === 'UNKNOWN') {
-            await lineClient.replyMessage({
-              replyToken: event.replyToken,
-              messages: [{ type: 'text', text: 'พิมพ์อะไรมาเนี่ย งงไปหมดละ พิมพ์มาให้ชัดๆ หน่อยสิ' }]
-            });
-            continue;
-          }
+
 
           if (data.intent === 'UNDO') {
             // Find the most recent transaction across Sale, Purchase, Expense
