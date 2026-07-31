@@ -585,7 +585,7 @@ export default function TransactionsClient({ transactions, dateStr, period, offs
                     required
                   />
                 </div>
-                {editingTransaction.type !== 'ค่าใช้จ่าย' && (
+                {editingTransaction.type === 'ขายสินค้า' && (
                   <div>
                     <label className="text-xs font-bold text-slate-500 mb-1.5 block">สถานะ</label>
                     <select 
