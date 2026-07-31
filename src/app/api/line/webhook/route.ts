@@ -582,8 +582,8 @@ export async function POST(req: Request) {
             continue;
           }
           if (data.intent === 'EDIT') {
-            let target = null;
-            let targetType = '';
+            let target: any = null;
+            let targetType: 'SALE' | 'PURCHASE' | 'EXPENSE' | undefined = undefined;
             let targetName = data.editTargetName || 'ไม่ระบุชื่อ';
 
             if (data.editTargetId) {
