@@ -680,7 +680,7 @@ export async function POST(req: Request) {
             });
 
             // Prepare summary text for confirmation
-            const targetIdLabel = targetType.charAt(0) + '-' + target.id;
+            const targetIdLabel = targetType!.charAt(0) + '-' + target.id;
             let summaryText = `บิล ID: ${targetIdLabel}\nรายการ: ${targetType === 'SALE' ? 'ขายให้' : targetType === 'PURCHASE' ? 'ซื้อจาก' : 'รายจ่ายของ'} ${targetName}\n`;
             if (data.totalAmount) summaryText += `👉 แก้ไขยอดเป็น: ฿${data.totalAmount}\n`;
             if (data.status) summaryText += `👉 แก้สถานะเป็น: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ'}\n`;
