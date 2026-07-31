@@ -35,6 +35,7 @@ export type ExtractedTransaction = {
   editTargetName?: string;
   editTargetProduct?: string;
   editTargetId?: string | number;
+  editTargetType?: 'SALE' | 'PURCHASE' | 'EXPENSE';
 };
 
 export async function extractTransaction(text: string, previousContext?: string): Promise<ExtractedTransaction> {

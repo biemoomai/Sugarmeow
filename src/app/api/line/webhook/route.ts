@@ -627,11 +627,13 @@ export async function POST(req: Request) {
                 prisma.sale.findMany({
                   where: { lineUserId: userId, customer: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
                   orderBy: { createdAt: 'desc' },
+                  include: { customer: true },
                   take: 1
                 }),
                 prisma.purchase.findMany({
                   where: { lineUserId: userId, supplier: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
                   orderBy: { createdAt: 'desc' },
+                  include: { supplier: true },
                   take: 1
                 })
               ]);
