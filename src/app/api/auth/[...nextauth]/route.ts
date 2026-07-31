@@ -4,8 +4,8 @@ import LineProvider from 'next-auth/providers/line';
 export const authOptions: NextAuthOptions = {
   providers: [
     LineProvider({
-      clientId: process.env.LINE_CLIENT_ID || '',
-      clientSecret: process.env.LINE_CLIENT_SECRET || '',
+      clientId: process.env.LINE_CLIENT_ID as string,
+      clientSecret: process.env.LINE_CLIENT_SECRET as string,
     }),
   ],
   callbacks: {

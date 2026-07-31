@@ -22,7 +22,8 @@ export async function processTransaction(payload: any) {
       data: {
         supplierId: supplier.id,
         productId: product.id,
-        quantityKg: qty || 0,
+        quantity: qty || 0,
+        unit: 'kg',
         unitPrice: price || 0,
         totalAmount: total || ((qty || 0) * (price || 0)),
       }
@@ -45,7 +46,8 @@ export async function processTransaction(payload: any) {
       data: {
         customerId: customer.id,
         productId: product.id,
-        quantityKg: qty || 0,
+        quantity: qty || 0,
+        unit: 'kg',
         unitPrice: price || 0,
         totalAmount: total || ((qty || 0) * (price || 0)),
         paymentStatus: payment_status || 'PAID',

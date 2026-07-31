@@ -38,172 +38,115 @@ export async function POST(req: Request) {
                 contents: {
                   type: 'carousel',
                   contents: [
-                    // --- Page 1: How to Record ---
+                    // --- Page 1: Recording & Editing ---
                     {
                       type: 'bubble',
                       header: {
-                        type: 'box',
-                        layout: 'vertical',
-                        backgroundColor: '#0F172A',
+                        type: 'box', layout: 'vertical', backgroundColor: '#0F172A',
                         contents: [
-                          { type: 'text', text: '📝 1. วิธีพิมพ์บิล', weight: 'bold', color: '#F8FAFC', size: 'md' },
-                          { type: 'text', text: 'พิมพ์เหมือนคุยกับคนได้เลย!', size: 'xs', color: '#94A3B8', margin: 'xs' }
+                          { type: 'text', text: '📝 1. จดบิล & แก้บิล', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'พิมพ์ภาษาคนได้เลย ระบุวันได้', size: 'xs', color: '#94A3B8', margin: 'xs' }
                         ]
                       },
                       body: {
-                        type: 'box',
-                        layout: 'vertical',
-                        spacing: 'md',
+                        type: 'box', layout: 'vertical', spacing: 'sm',
                         contents: [
                           {
                             type: 'box', layout: 'vertical', spacing: 'xs',
                             contents: [
-                              { type: 'text', text: '📦 ซื้อเข้า', weight: 'bold', size: 'sm', color: '#F59E0B' },
-                              { type: 'text', text: '• ซื้อ กล้วย 30 โล โลละ 10 บาท จากคุณเต้', size: 'xs', color: '#475569', wrap: true }
+                              { type: 'text', text: '📦 ซื้อเข้า / 💵 ขายออก / 💸 รายจ่าย', weight: 'bold', size: 'sm', color: '#10B981' },
+                              { type: 'text', text: '• ซื้อกล้วย 30 โล โลละ 10 บาท\n• ขายทุเรียนพี่พร 5 โล โลละ 120 จ่ายแล้ว พรุ่งนี้\n• ค่าน้ำมัน 500', size: 'xs', color: '#475569', wrap: true }
                             ]
                           },
                           { type: 'separator' },
                           {
                             type: 'box', layout: 'vertical', spacing: 'xs',
                             contents: [
-                              { type: 'text', text: '💵 ขายออก', weight: 'bold', size: 'sm', color: '#10B981' },
-                              { type: 'text', text: '• ขาย ทุเรียน นายเอ 5 โล โลละ 120 จ่ายแล้ว', size: 'xs', color: '#475569', wrap: true }
-                            ]
-                          },
-                          { type: 'separator' },
-                          {
-                            type: 'box', layout: 'vertical', spacing: 'xs',
-                            contents: [
-                              { type: 'text', text: '💸 ค่าใช้จ่าย', weight: 'bold', size: 'sm', color: '#EF4444' },
-                              { type: 'text', text: '• ค่าน้ำมัน 500\n• ค่าแรง 400', size: 'xs', color: '#475569', wrap: true }
+                              { type: 'text', text: '✏️ สั่งแก้ไขบิลของวันนี้', weight: 'bold', size: 'sm', color: '#F59E0B' },
+                              { type: 'text', text: '• แก้ยอดขายพี่พรเป็น 500\n• แก้บิลคุณสมหญิง เปลี่ยนเป็นจ่ายแล้ว', size: 'xs', color: '#475569', wrap: true }
                             ]
                           }
                         ]
                       },
                       footer: {
-                        type: 'box',
-                        layout: 'vertical',
+                        type: 'box', layout: 'vertical',
                         contents: [
-                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองพิมพ์: ขายแตงโม 10 โล โลละ 20', text: 'ขายแตงโม 10 โล โลละ 20 ให้พี่พร' } }
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองพิมพ์: ขายแตงโม 10 โล 200', text: 'ขายแตงโม 10 โล 200 ให้พี่พร' } }
                         ]
                       }
                     },
-                    // --- Page 2: Smart Features ---
+                    // --- Page 2: Reports & Dashboard ---
                     {
                       type: 'bubble',
                       header: {
-                        type: 'box',
-                        layout: 'vertical',
-                        backgroundColor: '#1E1B4B',
+                        type: 'box', layout: 'vertical', backgroundColor: '#064E3B',
                         contents: [
-                          { type: 'text', text: '🧠 2. ความฉลาดของบอท', weight: 'bold', color: '#F8FAFC', size: 'md' },
-                          { type: 'text', text: 'ผมไม่ใช่บอทโง่ๆ นะครับ', size: 'xs', color: '#A5B4FC', margin: 'xs' }
+                          { type: 'text', text: '📊 2. ดูสรุปยอด & ลูกหนี้', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'เช็คยอดง่ายๆ ในแชท หรือดูเว็บ', size: 'xs', color: '#6EE7B7', margin: 'xs' }
                         ]
                       },
                       body: {
-                        type: 'box',
-                        layout: 'vertical',
-                        spacing: 'md',
+                        type: 'box', layout: 'vertical', spacing: 'sm',
                         contents: [
                           {
                             type: 'box', layout: 'vertical', spacing: 'xs',
                             contents: [
-                              { type: 'text', text: '🔍 ถ้าลืมบอกราคา/จำนวน?', weight: 'bold', size: 'sm', color: '#6366F1' },
-                              { type: 'text', text: 'ไม่ต้องตกใจ! ถ้าพิมพ์มาไม่ครบ ผมจะทักถามกลับให้พิมพ์เพิ่มทันทีครับ', size: 'xs', color: '#475569', wrap: true }
+                              { type: 'text', text: '🔍 คำสั่งเช็คยอดในไลน์', weight: 'bold', size: 'sm', color: '#10B981' },
+                              { type: 'text', text: '• สรุปยอด (ดูยอดทั้งหมดของวันนี้)\n• ยอดขายสัปดาห์นี้\n• เจ๊ศรีซื้อกล้วยไปเท่าไหร่', size: 'xs', color: '#475569', wrap: true }
                             ]
                           },
                           { type: 'separator' },
                           {
                             type: 'box', layout: 'vertical', spacing: 'xs',
                             contents: [
-                              { type: 'text', text: '↩️ พิมพ์ผิด ทำไงดี?', weight: 'bold', size: 'sm', color: '#6366F1' },
-                              { type: 'text', text: 'ถ้าบันทึกไปแล้ว พิมพ์คำว่า "ยกเลิก" หรือ "ลบรายการล่าสุด" ผมจะลบออกให้ทันที', size: 'xs', color: '#475569', wrap: true }
+                              { type: 'text', text: '💸 ทวงหนี้ / เช็คคนค้างชำระ', weight: 'bold', size: 'sm', color: '#EF4444' },
+                              { type: 'text', text: '• ใครค้างเงินบ้าง\n• สรุปยอดลูกหนี้', size: 'xs', color: '#475569', wrap: true }
                             ]
                           }
                         ]
                       },
                       footer: {
-                        type: 'box',
-                        layout: 'vertical',
+                        type: 'box', layout: 'vertical', spacing: 'sm',
                         contents: [
-                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองขอลบรายการล่าสุด', text: 'ยกเลิก' } }
+                          { type: 'button', style: 'primary', color: '#10B981', height: 'sm', action: { type: 'uri', label: 'เปิดดู Dashboard', uri: 'https://sugarmeow.vercel.app/' } },
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองพิมพ์: ใครค้างเงินบ้าง', text: 'ใครค้างเงินบ้าง' } }
                         ]
                       }
                     },
-                    // --- Page 2.5: Advanced Features ---
+                    // --- Page 3: Smart Bot Behaviors ---
                     {
                       type: 'bubble',
                       header: {
-                        type: 'box',
-                        layout: 'vertical',
-                        backgroundColor: '#9333EA',
+                        type: 'box', layout: 'vertical', backgroundColor: '#1E1B4B',
                         contents: [
-                          { type: 'text', text: '✨ 3. ฟีเจอร์ขั้นสูง', weight: 'bold', color: '#F8FAFC', size: 'md' },
-                          { type: 'text', text: 'ระบุวันย้อนหลัง & สั่งแก้บิล', size: 'xs', color: '#D8B4FE', margin: 'xs' }
+                          { type: 'text', text: '🧠 3. ความฉลาดของบอท', weight: 'bold', color: '#F8FAFC', size: 'md' },
+                          { type: 'text', text: 'คุยเล่นได้ สั่งลบได้ ถามเก่ง', size: 'xs', color: '#A5B4FC', margin: 'xs' }
                         ]
                       },
                       body: {
-                        type: 'box',
-                        layout: 'vertical',
-                        spacing: 'md',
+                        type: 'box', layout: 'vertical', spacing: 'sm',
                         contents: [
                           {
                             type: 'box', layout: 'vertical', spacing: 'xs',
                             contents: [
-                              { type: 'text', text: '📅 ระบุวันที่ได้เลย', weight: 'bold', size: 'sm', color: '#A855F7' },
-                              { type: 'text', text: '• ขายแตงโมให้เจ๊ศรี 20 โล พรุ่งนี้\n• จ่ายค่าไฟ 500 บาท เมื่อวาน', size: 'xs', color: '#475569', wrap: true }
+                              { type: 'text', text: '💬 พิมพ์มาไม่ครบ / คุยเล่น', weight: 'bold', size: 'sm', color: '#6366F1' },
+                              { type: 'text', text: 'ถ้าบอกข้อมูลขาด บอทจะถามกลับเอง หรือถ้าแค่ทักมา "สวัสดี" บอทก็ตอบได้ (แต่มันกวนตีนนะบอกก่อน)', size: 'xs', color: '#475569', wrap: true }
                             ]
                           },
                           { type: 'separator' },
                           {
                             type: 'box', layout: 'vertical', spacing: 'xs',
                             contents: [
-                              { type: 'text', text: '✏️ สั่งแก้บิลของวันนี้', weight: 'bold', size: 'sm', color: '#A855F7' },
-                              { type: 'text', text: '• แก้ยอดขายคุณเต้เป็น 500\n• แก้บิลคุณสมหญิง เปลี่ยนเป็นจ่ายแล้ว', size: 'xs', color: '#475569', wrap: true }
+                              { type: 'text', text: '↩️ พิมพ์ผิด ทำไงดี?', weight: 'bold', size: 'sm', color: '#EF4444' },
+                              { type: 'text', text: 'แค่พิมพ์ว่า "ยกเลิก" หรือ "ลบบิลล่าสุด" บอทจะลบรายการที่เพิ่งบันทึกไปเมื่อกี้ให้ทันที', size: 'xs', color: '#475569', wrap: true }
                             ]
                           }
                         ]
                       },
                       footer: {
-                        type: 'box',
-                        layout: 'vertical',
+                        type: 'box', layout: 'vertical',
                         contents: [
-                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลอง: แก้ยอดขายคุณเต้เป็น 500', text: 'แก้ยอดขายคุณเต้เป็น 500' } }
-                        ]
-                      }
-                    },
-                    // --- Page 3: Quick Actions ---
-                    {
-                      type: 'bubble',
-                      header: {
-                        type: 'box',
-                        layout: 'vertical',
-                        backgroundColor: '#064E3B',
-                        contents: [
-                          { type: 'text', text: '⚡ 4. เมนูลัด', weight: 'bold', color: '#F8FAFC', size: 'md' },
-                          { type: 'text', text: 'กดปุ่มเพื่อสั่งงานด่วน', size: 'xs', color: '#6EE7B7', margin: 'xs' }
-                        ]
-                      },
-                      body: {
-                        type: 'box',
-                        layout: 'vertical',
-                        spacing: 'md',
-                        contents: [
-                          {
-                            type: 'box', layout: 'vertical', spacing: 'xs',
-                            contents: [
-                              { type: 'text', text: 'ต้องการดูสถิติและยอดทั้งหมดแบบกราฟสวยๆ สามารถเรียกดูได้ทันที หรือจะพิมพ์ว่า "สรุปยอด" ก็ได้ครับ', size: 'sm', color: '#475569', wrap: true }
-                            ]
-                          }
-                        ]
-                      },
-                      footer: {
-                        type: 'box',
-                        layout: 'vertical',
-                        spacing: 'sm',
-                        contents: [
-                          { type: 'button', style: 'primary', color: '#10B981', height: 'sm', action: { type: 'uri', label: '📊 ไปดูแดชบอร์ด', uri: 'https://sugarmeow.vercel.app/' } },
-                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ดูสรุปยอดในไลน์', text: 'สรุปยอด' } }
+                          { type: 'button', style: 'secondary', height: 'sm', action: { type: 'message', label: 'ลองพิมพ์: ยกเลิก', text: 'ยกเลิก' } }
                         ]
                       }
                     }
@@ -345,6 +288,24 @@ export async function POST(req: Request) {
 
           const data = await extractTransaction(text, previousContext);
           
+          // Validate strict requirements to prevent database errors and enforce complete forms
+          if (data.intent === 'SALE' || data.intent === 'PURCHASE') {
+            if (!data.product || !data.quantity || data.quantity <= 0 || !data.totalAmount || data.totalAmount <= 0) {
+              data.intent = 'INCOMPLETE';
+              data.replyMessage = 'ข้อมูลไม่ครบโว้ย! จะซื้อขายอะไร จำนวนกี่กิโล ยอดรวมเท่าไหร่ บอกมาให้ชัดๆ ดิ๊ พิมพ์ตกๆ หล่นๆ อยู่ได้!';
+            }
+          } else if (data.intent === 'EXPENSE') {
+            if (!data.totalAmount || data.totalAmount <= 0) {
+              data.intent = 'INCOMPLETE';
+              data.replyMessage = 'จ่ายค่าอะไร ยอดเท่าไหร่ บอกมาให้ครบสิวะ! กูไม่ได้มีตาทิพย์นะ!';
+            }
+          } else if (data.intent === 'EDIT') {
+            if (!data.editTargetName || !data.totalAmount || data.totalAmount <= 0) {
+              data.intent = 'INCOMPLETE';
+              data.replyMessage = 'จะแก้บิลของใคร ยอดใหม่เป็นเท่าไหร่ พิมพ์มาให้ครบๆ ดิ๊ จะแก้ให้ถูกได้ไงวะ!';
+            }
+          }
+
           // Save to draft
           await prisma.transactionDraft.upsert({
             where: { lineUserId: userId },
@@ -352,10 +313,10 @@ export async function POST(req: Request) {
             create: { lineUserId: userId, payload: JSON.stringify(data) }
           });
 
-          if (data.intent === 'INCOMPLETE' && data.replyMessage) {
+          if (data.intent === 'INCOMPLETE' || data.intent === 'CHAT') {
             await lineClient.replyMessage({
               replyToken: event.replyToken,
-              messages: [{ type: 'text', text: data.replyMessage }]
+              messages: [{ type: 'text', text: data.replyMessage || 'พิมพ์อะไรมาวะ กูงง รีบๆ พิมพ์มาให้ครบๆ ดิ๊!' }]
             });
             continue;
           }
@@ -363,7 +324,7 @@ export async function POST(req: Request) {
           if (data.intent === 'UNKNOWN') {
             await lineClient.replyMessage({
               replyToken: event.replyToken,
-              messages: [{ type: 'text', text: 'พิมพ์อะไรมาเนี่ย งงไปหมดละ พิมพ์มาให้ครบๆ ดิ๊ มึนละเนี่ย' }]
+              messages: [{ type: 'text', text: 'พิมพ์อะไรมาเนี่ย งงไปหมดละ พิมพ์มาให้ชัดๆ หน่อยสิ' }]
             });
             continue;
           }
@@ -445,6 +406,86 @@ export async function POST(req: Request) {
             let totalExpenses = 0;
 
             const type = data.reportType || 'ALL';
+
+            if (type === 'PENDING') {
+              const pendingSales = await prisma.sale.findMany({ 
+                where: { ...whereSale, paymentStatus: 'PENDING' },
+                include: { customer: true }
+              });
+              const pendingPurchases = await prisma.purchase.findMany({ 
+                where: { ...wherePurchase, paymentStatus: 'PENDING' },
+                include: { supplier: true }
+              });
+
+              let totalPendingSales = 0;
+              let totalPendingPurchases = 0;
+              const pendingSalesByCustomer: Record<string, number> = {};
+              const pendingPurchasesBySupplier: Record<string, number> = {};
+
+              for (const s of pendingSales) {
+                totalPendingSales += s.totalAmount;
+                pendingSalesByCustomer[s.customer.name] = (pendingSalesByCustomer[s.customer.name] || 0) + s.totalAmount;
+              }
+              for (const p of pendingPurchases) {
+                totalPendingPurchases += p.totalAmount;
+                pendingPurchasesBySupplier[p.supplier.name] = (pendingPurchasesBySupplier[p.supplier.name] || 0) + p.totalAmount;
+              }
+
+              const contents: any[] = [];
+              if (totalPendingSales > 0) {
+                contents.push({ type: 'text', text: `⚠️ ลูกหนี้ค้างจ่ายเรา (รวม ฿${new Intl.NumberFormat('th-TH').format(totalPendingSales)})`, weight: 'bold', color: '#EF4444', size: 'sm' });
+                for (const [name, amount] of Object.entries(pendingSalesByCustomer)) {
+                  contents.push({
+                    type: 'box', layout: 'horizontal',
+                    contents: [
+                      { type: 'text', text: `- ${name}`, size: 'sm', color: '#64748B', flex: 1 },
+                      { type: 'text', text: `฿${new Intl.NumberFormat('th-TH').format(amount)}`, size: 'sm', weight: 'bold', color: '#EF4444', align: 'end' }
+                    ]
+                  });
+                }
+              }
+              if (totalPendingPurchases > 0) {
+                if (contents.length > 0) contents.push({ type: 'separator', margin: 'md' });
+                contents.push({ type: 'text', text: `💸 เราค้างจ่ายเขา (รวม ฿${new Intl.NumberFormat('th-TH').format(totalPendingPurchases)})`, weight: 'bold', color: '#F59E0B', size: 'sm', margin: contents.length > 0 ? 'md' : 'none' });
+                for (const [name, amount] of Object.entries(pendingPurchasesBySupplier)) {
+                  contents.push({
+                    type: 'box', layout: 'horizontal',
+                    contents: [
+                      { type: 'text', text: `- ${name}`, size: 'sm', color: '#64748B', flex: 1 },
+                      { type: 'text', text: `฿${new Intl.NumberFormat('th-TH').format(amount)}`, size: 'sm', weight: 'bold', color: '#F59E0B', align: 'end' }
+                    ]
+                  });
+                }
+              }
+
+              if (contents.length === 0) {
+                contents.push({ type: 'text', text: '🎉 ยินดีด้วย! ไม่มีใครค้างเงินเลย เยี่ยมยอด', size: 'sm', color: '#10B981' });
+              }
+
+              await lineClient.replyMessage({
+                replyToken: event.replyToken,
+                messages: [
+                  {
+                    type: 'flex', altText: 'สรุปยอดค้างชำระ',
+                    contents: {
+                      type: 'bubble',
+                      header: {
+                        type: 'box', layout: 'vertical', backgroundColor: '#0F172A',
+                        contents: [
+                          { type: 'text', text: '🚨 สรุปยอดค้างชำระ', weight: 'bold', color: '#F8FAFC', size: 'md' }
+                        ]
+                      },
+                      body: { type: 'box', layout: 'vertical', spacing: 'sm', contents: contents },
+                      footer: {
+                        type: 'box', layout: 'vertical',
+                        contents: [{ type: 'button', style: 'primary', color: '#475569', height: 'sm', action: { type: 'uri', label: '📲 ดูรายละเอียดที่เว็บ', uri: `https://sugarmeow.vercel.app/` } }]
+                      }
+                    }
+                  }
+                ]
+              });
+              continue;
+            }
 
             if (type === 'ALL' || type === 'SALES') {
               const sales = await prisma.sale.findMany({ where: whereSale });
@@ -547,89 +588,144 @@ export async function POST(req: Request) {
             continue;
           }
           if (data.intent === 'EDIT') {
-            const todayStart = startOfDay(new Date());
-            
-            // Search for today's transactions matching the name
-            const [sales, purchases] = await Promise.all([
-              prisma.sale.findMany({
-                where: { lineUserId: userId, customer: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
-                orderBy: { createdAt: 'desc' },
-                take: 1
-              }),
-              prisma.purchase.findMany({
-                where: { lineUserId: userId, supplier: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
-                orderBy: { createdAt: 'desc' },
-                take: 1
-              })
-            ]);
-            
-            const targetSale = sales[0];
-            const targetPurchase = purchases[0];
-            
             let target = null;
             let targetType = '';
-            
-            if (targetSale && targetPurchase) {
-              if (targetSale.createdAt > targetPurchase.createdAt) {
+            let targetName = data.editTargetName || 'ไม่ระบุชื่อ';
+
+            if (data.editTargetId) {
+              const targetStr = String(data.editTargetId).toUpperCase().trim();
+              const match = targetStr.match(/^([SPE])-?(\d+)$/);
+              
+              if (match) {
+                const prefix = match[1];
+                const id = parseInt(match[2]);
+                if (prefix === 'S') {
+                  target = await prisma.sale.findUnique({ where: { id }, include: { customer: true } });
+                  targetType = 'SALE';
+                  if (target) targetName = target.customer.name;
+                } else if (prefix === 'P') {
+                  target = await prisma.purchase.findUnique({ where: { id }, include: { supplier: true } });
+                  targetType = 'PURCHASE';
+                  if (target) targetName = target.supplier.name;
+                } else if (prefix === 'E') {
+                  target = await prisma.expense.findUnique({ where: { id } });
+                  targetType = 'EXPENSE';
+                  if (target) targetName = target.category;
+                }
+              } else {
+                 const id = parseInt(targetStr.replace(/\D/g, ''));
+                 if (!isNaN(id)) {
+                   const [s, p, e] = await Promise.all([
+                     prisma.sale.findUnique({ where: { id }, include: { customer: true } }),
+                     prisma.purchase.findUnique({ where: { id }, include: { supplier: true } }),
+                     prisma.expense.findUnique({ where: { id } })
+                   ]);
+                   if (s) { target = s; targetType = 'SALE'; targetName = s.customer.name; }
+                   else if (p) { target = p; targetType = 'PURCHASE'; targetName = p.supplier.name; }
+                   else if (e) { target = e; targetType = 'EXPENSE'; targetName = e.category; }
+                 }
+              }
+            }
+
+            if (!target && data.editTargetName) {
+              const todayStart = startOfDay(new Date());
+              const [sales, purchases] = await Promise.all([
+                prisma.sale.findMany({
+                  where: { lineUserId: userId, customer: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
+                  orderBy: { createdAt: 'desc' },
+                  take: 1
+                }),
+                prisma.purchase.findMany({
+                  where: { lineUserId: userId, supplier: { name: { contains: data.editTargetName } }, createdAt: { gte: todayStart } },
+                  orderBy: { createdAt: 'desc' },
+                  take: 1
+                })
+              ]);
+              
+              const targetSale = sales[0];
+              const targetPurchase = purchases[0];
+              
+              if (targetSale && targetPurchase) {
+                if (targetSale.createdAt > targetPurchase.createdAt) {
+                  target = targetSale;
+                  targetType = 'SALE';
+                  targetName = targetSale.customer?.name || data.editTargetName;
+                } else {
+                  target = targetPurchase;
+                  targetType = 'PURCHASE';
+                  targetName = targetPurchase.supplier?.name || data.editTargetName;
+                }
+              } else if (targetSale) {
                 target = targetSale;
                 targetType = 'SALE';
-              } else {
+                targetName = targetSale.customer?.name || data.editTargetName;
+              } else if (targetPurchase) {
                 target = targetPurchase;
                 targetType = 'PURCHASE';
+                targetName = targetPurchase.supplier?.name || data.editTargetName;
               }
-            } else if (targetSale) {
-              target = targetSale;
-              targetType = 'SALE';
-            } else if (targetPurchase) {
-              target = targetPurchase;
-              targetType = 'PURCHASE';
             }
 
             if (!target) {
               await lineClient.replyMessage({
                 replyToken: event.replyToken,
-                messages: [{ type: 'text', text: `หาบิลของ "${data.editTargetName}" ในวันนี้ไม่เจอเลยครับ 🥲 อาจจะเพราะชื่อไม่ตรงกัน 100% แนะนำให้เข้าไปกดแก้ในเว็บจะชัวร์สุดครับ` }]
+                messages: [{ type: 'text', text: `หาบิลที่จะแก้ไม่เจอเลยครับ 🥲 อาจจะเพราะชื่อหรือ ID ไม่ตรงกัน แนะนำให้เข้าไปกดแก้ในเว็บจะชัวร์สุดครับ` }]
               });
               continue;
             }
 
-            // Update it!
-            const updateData: any = {};
-            if (data.totalAmount) updateData.totalAmount = data.totalAmount;
-            if (data.status) updateData.paymentStatus = data.status;
-            if (data.quantity) updateData.quantity = data.quantity;
-            if (data.unitPrice) updateData.unitPrice = data.unitPrice;
+            // Augment draft with target info
+            data.editTargetId = target.id;
+            data.editTargetType = targetType;
             
-            // If they change product name
-            if (data.product || data.editTargetProduct) {
-              const productName = data.product || data.editTargetProduct;
-              if (productName) {
-                let product = await prisma.product.findFirst({ where: { name: productName } });
-                if (!product) {
-                  product = await prisma.product.create({ data: { name: productName } });
-                }
-                updateData.productId = product.id;
-              }
-            }
+            await prisma.transactionDraft.update({
+              where: { lineUserId: userId },
+              data: { payload: JSON.stringify(data) }
+            });
 
-            if (targetType === 'SALE') {
-              await prisma.sale.update({ where: { id: target.id }, data: updateData });
-            } else {
-              await prisma.purchase.update({ where: { id: target.id }, data: updateData });
-            }
+            // Prepare summary text for confirmation
+            const targetIdLabel = targetType.charAt(0) + '-' + target.id;
+            let summaryText = `บิล ID: ${targetIdLabel}\nรายการ: ${targetType === 'SALE' ? 'ขายให้' : targetType === 'PURCHASE' ? 'ซื้อจาก' : 'รายจ่ายของ'} ${targetName}\n`;
+            if (data.totalAmount) summaryText += `👉 แก้ไขยอดเป็น: ฿${data.totalAmount}\n`;
+            if (data.status) summaryText += `👉 แก้สถานะเป็น: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ'}\n`;
+            if (data.quantity) summaryText += `👉 แก้จำนวนเป็น: ${data.quantity}\n`;
+            if (data.unitPrice) summaryText += `👉 แก้ราคา/หน่วยเป็น: ฿${data.unitPrice}\n`;
+            if (data.product || data.editTargetProduct) summaryText += `👉 แก้ชื่อสินค้าเป็น: ${data.product || data.editTargetProduct}\n`;
 
             await lineClient.replyMessage({
               replyToken: event.replyToken,
-              messages: [{ type: 'text', text: `✨ อัปเดตบิลของ "${data.editTargetName}" ล่าสุดให้เรียบร้อยแล้วครับ!` }]
+              messages: [
+                {
+                  type: 'flex',
+                  altText: 'ยืนยันการแก้ไขบิล',
+                  contents: {
+                    type: 'bubble',
+                    body: {
+                      type: 'box', layout: 'vertical',
+                      contents: [
+                        { type: 'text', text: '✏️ ต้องการแก้ไขบิลนี้ใช่ไหม?', weight: 'bold', color: '#A855F7', size: 'sm' },
+                        { type: 'text', text: summaryText, wrap: true, margin: 'md', size: 'sm' }
+                      ]
+                    },
+                    footer: {
+                      type: 'box', layout: 'horizontal', spacing: 'sm',
+                      contents: [
+                        { type: 'button', style: 'primary', color: '#A855F7', height: 'sm', action: { type: 'postback', label: 'ยืนยันแก้บิล', data: 'action=confirm' } },
+                        { type: 'button', style: 'secondary', height: 'sm', action: { type: 'postback', label: 'ยกเลิก', data: 'action=cancel' } }
+                      ]
+                    }
+                  }
+                }
+              ]
             });
             continue;
           }
 
           let summaryText = '';
           if (data.intent === 'SALE') {
-             summaryText = `ขายให้: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ (ไปทวงด้วยนะ)'}`;
+             summaryText = `ขายให้: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} ${data.unit || 'ชิ้น'}\nราคา: ${data.unitPrice} ฿/${data.unit || 'ชิ้น'}\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ค้างชำระ (ไปทวงด้วยนะ)'}`;
           } else if (data.intent === 'PURCHASE') {
-             summaryText = `ซื้อจาก: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} kg\nราคา: ${data.unitPrice} ฿/kg\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ติดหนี้เขาอยู่'}`;
+             summaryText = `ซื้อจาก: ${data.name}\nของ: ${data.product}\nจำนวน: ${data.quantity} ${data.unit || 'ชิ้น'}\nราคา: ${data.unitPrice} ฿/${data.unit || 'ชิ้น'}\nยอดรวม: ${data.totalAmount} ฿\nสถานะ: ${data.status === 'PAID' ? 'จ่ายแล้ว' : 'ติดหนี้เขาอยู่'}`;
           } else {
              summaryText = `หมวด: ${data.expenseCategory || 'ทั่วไป'}\nรายละเอียด: ${data.expenseDescription || '-'}\nยอด: ${data.totalAmount} ฿`;
           }
@@ -776,6 +872,7 @@ export async function POST(req: Request) {
            const payload = JSON.parse(draft.payload);
            
            try {
+             let createdIdLabel = '';
              // UPSERT LOGIC WITH lineUserId
              if (payload.intent === 'SALE') {
                 let customer = await prisma.customer.findFirst({ where: { name: payload.name } });
@@ -784,12 +881,13 @@ export async function POST(req: Request) {
                 let product = await prisma.product.findFirst({ where: { name: payload.product } });
                 if (!product) product = await prisma.product.create({ data: { name: payload.product } });
 
-                await prisma.sale.create({
+                const s = await prisma.sale.create({
                   data: {
                     date: payload.date ? new Date(payload.date) : new Date(),
                     customerId: customer.id,
                     productId: product.id,
-                    quantityKg: payload.quantity,
+                    quantity: payload.quantity,
+                    unit: payload.unit || 'ชิ้น',
                     unitPrice: payload.unitPrice,
                     totalAmount: payload.totalAmount,
                     paymentStatus: payload.status,
@@ -797,6 +895,7 @@ export async function POST(req: Request) {
                     lineUserId: userId,
                   }
                 });
+                createdIdLabel = `S-${s.id}`;
              } else if (payload.intent === 'PURCHASE') {
                 let supplier = await prisma.supplier.findFirst({ where: { name: payload.name } });
                 if (!supplier) supplier = await prisma.supplier.create({ data: { name: payload.name } });
@@ -804,19 +903,21 @@ export async function POST(req: Request) {
                 let product = await prisma.product.findFirst({ where: { name: payload.product } });
                 if (!product) product = await prisma.product.create({ data: { name: payload.product } });
 
-                await prisma.purchase.create({
+                const p = await prisma.purchase.create({
                   data: {
                     date: payload.date ? new Date(payload.date) : new Date(),
                     supplierId: supplier.id,
                     productId: product.id,
-                    quantityKg: payload.quantity,
+                    quantity: payload.quantity,
+                    unit: payload.unit || 'ชิ้น',
                     unitPrice: payload.unitPrice,
                     totalAmount: payload.totalAmount,
                     lineUserId: userId,
                   }
                 });
+                createdIdLabel = `P-${p.id}`;
              } else if (payload.intent === 'EXPENSE') {
-                await prisma.expense.create({
+                const e = await prisma.expense.create({
                   data: {
                     date: payload.date ? new Date(payload.date) : new Date(),
                     category: payload.expenseCategory || 'ทั่วไป',
@@ -825,16 +926,45 @@ export async function POST(req: Request) {
                     lineUserId: userId,
                   }
                 });
+                createdIdLabel = `E-${e.id}`;
+             } else if (payload.intent === 'EDIT') {
+                 const targetId = payload.editTargetId;
+                 const targetType = payload.editTargetType;
+                 
+                 const updateData: any = {};
+                 if (payload.totalAmount) updateData.totalAmount = payload.totalAmount;
+                 if (payload.status) updateData.paymentStatus = payload.status;
+                 if (payload.quantity !== undefined) updateData.quantity = payload.quantity;
+                 if (payload.unit !== undefined) updateData.unit = payload.unit;
+                 if (payload.unitPrice !== undefined) updateData.unitPrice = payload.unitPrice;
+                 
+                 if (payload.product || payload.editTargetProduct) {
+                   const productName = payload.product || payload.editTargetProduct;
+                   if (productName) {
+                     let product = await prisma.product.findFirst({ where: { name: productName } });
+                     if (!product) {
+                       product = await prisma.product.create({ data: { name: productName } });
+                     }
+                     updateData.productId = product.id;
+                   }
+                 }
+
+                 if (targetType === 'SALE') {
+                   await prisma.sale.update({ where: { id: targetId }, data: updateData });
+                 } else if (targetType === 'PURCHASE') {
+                   await prisma.purchase.update({ where: { id: targetId }, data: updateData });
+                 }
              }
 
              // clean up draft
              await prisma.transactionDraft.delete({ where: { lineUserId: userId } });
 
              const dashboardUrl = `https://sugarmeow.vercel.app/`;
+             const replyConfirmMsg = payload.intent === 'EDIT' ? 'เออ แก้ไขให้ละ' : `เออ บันทึกลงระบบให้ละ (บิล ID: ${createdIdLabel})`;
              await lineClient.replyMessage({
                replyToken: event.replyToken,
                messages: [
-                 { type: 'text', text: 'เออ บันทึกลงระบบให้ละ จะไปทำอะไรก็ไป' },
+                 { type: 'text', text: replyConfirmMsg },
                  {
                    type: 'flex',
                    altText: 'เปิดแดชบอร์ดซะ',

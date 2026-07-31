@@ -34,7 +34,8 @@ model Purchase {
   date         DateTime @default(now())
   supplierId   Int
   productId    Int
-  quantityKg   Float
+  quantity     Float    @map("quantityKg")
+  unit         String   @default("ชิ้น")
   unitPrice    Float
   totalAmount  Float
   lineUserId   String?
@@ -50,7 +51,8 @@ model Sale {
   date          DateTime @default(now())
   customerId    Int
   productId     Int
-  quantityKg    Float
+  quantity      Float    @map("quantityKg")
+  unit          String   @default("ชิ้น")
   unitPrice     Float
   totalAmount   Float
   paymentStatus String   @default("PAID") // "PAID", "PENDING"
