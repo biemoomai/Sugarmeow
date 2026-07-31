@@ -355,6 +355,19 @@ export async function POST(req: Request) {
             }
             continue;
           }
+
+          if (data.intent === 'DELETE_ALL') {
+            await prisma.sale.deleteMany({ where: { lineUserId: userId } });
+            await prisma.purchase.deleteMany({ where: { lineUserId: userId } });
+            await prisma.expense.deleteMany({ where: { lineUserId: userId } });
+            await prisma.transactionDraft.deleteMany({ where: { lineUserId: userId } });
+
+            await lineClient.replyMessage({
+              replyToken: event.replyToken,
+              messages: [{ type: 'text', text: 'เออ ล้างรายการให้ใหม่หมดละ โล่งเลยทีนี้ พอใจยัง?' }]
+            });
+            continue;
+          }
           
           if (data.intent === 'REPORT') {
             const now = new Date();
