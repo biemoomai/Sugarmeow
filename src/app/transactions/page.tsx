@@ -87,7 +87,7 @@ export default async function TransactionsPage(props: { searchParams: Promise<{ 
       entityName: p.supplier.name,
       productName: p.product.name,
       amount: p.totalAmount,
-      status: 'PAID'
+      status: p.paymentStatus
     })),
     ...rawExpenses.map(e => ({
       id: `E-${e.id}`,

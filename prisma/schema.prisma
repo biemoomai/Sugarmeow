@@ -39,6 +39,7 @@ model Purchase {
   unitPrice    Float
   totalAmount  Float
   lineUserId   String?
+  paymentStatus String   @default("PAID") // "PAID", "PENDING"
   
   supplier     Supplier @relation(fields: [supplierId], references: [id])
   product      Product  @relation(fields: [productId], references: [id])

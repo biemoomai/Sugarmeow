@@ -32,7 +32,7 @@ export async function editTransaction(
       const updateData: any = {};
       if (data.date) updateData.date = data.date;
       if (data.amount) updateData.totalAmount = data.amount;
-      if (data.status && type === 'S') updateData.paymentStatus = data.status;
+      if (data.status) updateData.paymentStatus = data.status;
 
       // Handle Customer/Supplier
       if (data.entityName) {

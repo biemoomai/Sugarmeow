@@ -908,6 +908,7 @@ export async function POST(req: Request) {
                     unit: payload.unit || 'ชิ้น',
                     unitPrice: payload.unitPrice,
                     totalAmount: payload.totalAmount,
+                    paymentStatus: payload.status,
                     lineUserId: userId,
                   }
                 });
