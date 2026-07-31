@@ -26,18 +26,18 @@ async function main() {
 
   // Purchases (Buy)
   await prisma.purchase.create({
-    data: { supplierId: s1.id, productId: p1.id, quantityKg: 500, unitPrice: 15, totalAmount: 7500, date: now }
+    data: { supplierId: s1.id, productId: p1.id, quantity: 500, unit: 'kg', unitPrice: 15, totalAmount: 7500, date: now }
   });
   await prisma.purchase.create({
-    data: { supplierId: s1.id, productId: p2.id, quantityKg: 200, unitPrice: 40, totalAmount: 8000, date: now }
+    data: { supplierId: s1.id, productId: p2.id, quantity: 200, unit: 'kg', unitPrice: 40, totalAmount: 8000, date: now }
   });
 
   // Sales (Sell)
   await prisma.sale.create({
-    data: { customerId: c1.id, productId: p1.id, quantityKg: 100, unitPrice: 30, totalAmount: 3000, paymentStatus: 'PAID', paymentDate: now, date: now }
+    data: { customerId: c1.id, productId: p1.id, quantity: 100, unit: 'kg', unitPrice: 30, totalAmount: 3000, paymentStatus: 'PAID', paymentDate: now, date: now }
   });
   await prisma.sale.create({
-    data: { customerId: c2.id, productId: p2.id, quantityKg: 50, unitPrice: 60, totalAmount: 3000, paymentStatus: 'PENDING', date: now }
+    data: { customerId: c2.id, productId: p2.id, quantity: 50, unit: 'kg', unitPrice: 60, totalAmount: 3000, paymentStatus: 'PENDING', date: now }
   });
 
   // Expenses
