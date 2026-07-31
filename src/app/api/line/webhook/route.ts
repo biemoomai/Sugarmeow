@@ -960,14 +960,15 @@ export async function POST(req: Request) {
              await prisma.transactionDraft.delete({ where: { lineUserId: userId } });
 
              const dashboardUrl = `https://sugarmeow.vercel.app/`;
-             const replyConfirmMsg = payload.intent === 'EDIT' ? 'เออ แก้ไขให้ละ' : `เออ บันทึกลงระบบให้ละ (บิล ID: ${createdIdLabel})`;
+             const isEdit = payload.intent === 'EDIT';
+             const displayId = isEdit ? payload.editTargetId : createdIdLabel;
+
              await lineClient.replyMessage({
                replyToken: event.replyToken,
                messages: [
-                 { type: 'text', text: replyConfirmMsg },
                  {
                    type: 'flex',
-                   altText: 'เปิดแดชบอร์ดซะ',
+                   altText: isEdit ? 'อัปเดตบิลสำเร็จ' : 'บันทึกบิลสำเร็จ',
                    contents: {
                      type: 'bubble',
                      body: {
@@ -976,10 +977,40 @@ export async function POST(req: Request) {
                        contents: [
                          {
                            type: 'text',
+                           text: isEdit ? '✨ อัปเดตบิลเรียบร้อย!' : '✨ บันทึกบิลลงระบบแล้ว!',
+                           weight: 'bold',
+                           color: '#1DB446',
+                           size: 'sm'
+                         },
+                         {
+                           type: 'box',
+                           layout: 'horizontal',
+                           margin: 'md',
+                           contents: [
+                             {
+                               type: 'text',
+                               text: 'ID อ้างอิง:',
+                               size: 'sm',
+                               color: '#64748B',
+                               flex: 0
+                             },
+                             {
+                               type: 'text',
+                               text: displayId || '-',
+                               size: 'md',
+                               weight: 'bold',
+                               color: '#D97706', // Gold color
+                               align: 'end'
+                             }
+                           ]
+                         },
+                         {
+                           type: 'text',
                            text: 'อุตส่าห์ทำปุ่มมาให้ละ กดเข้าไปดูยอดซะนะ 👇',
-                           size: 'sm',
-                           color: '#64748B',
-                           wrap: true
+                           size: 'xs',
+                           color: '#94A3B8',
+                           wrap: true,
+                           margin: 'lg'
                          }
                        ]
                      },
