@@ -1,5 +1,6 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import LineProvider from 'next-auth/providers/line';
+import GoogleProvider from 'next-auth/providers/google';
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -7,19 +8,23 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.LINE_CLIENT_ID as string,
       clientSecret: process.env.LINE_CLIENT_SECRET as string,
     }),
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    }),
   ],
   callbacks: {
-    async jwt({ token, profile }) {
+    async jwt({ token, profile, account }) {
       if (profile) {
-        // Line profile returns 'sub' as the line user id
-        token.lineUserId = profile.sub;
+        // 'sub' is the unique identifier for both LINE and Google
+        token.userId = profile.sub || token.sub;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        // Add lineUserId to session
-        (session.user as any).id = token.lineUserId;
+        // Add userId to session
+        (session.user as any).id = token.userId || token.sub;
       }
       return session;
     },
